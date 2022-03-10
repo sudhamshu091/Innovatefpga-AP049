@@ -32,4 +32,8 @@ Project for Innovatefpga contest.<br>
 - Split data into train and test images.
 - Run machine learning model.
 
+<h2>Real Time Emotion Recognition</h2>
+
+![](real_time.jpg)
+
 
