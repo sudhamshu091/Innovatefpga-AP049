@@ -34,6 +34,6 @@ Project for Innovatefpga contest.<br>
 
 <h3>Real Time Emotion Recognition</h3>
 
-![](outputs/real_time.jpg)
+![](outputs/real_time_video.jpg)
 
 
