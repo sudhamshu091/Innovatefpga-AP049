@@ -17,7 +17,9 @@ Project for Innovatefpga contest.<br>
 >>>anxiety<br>
 >>>bipolar<br>
 >>>dementia<br>
->>>depression<br>
+>>>happy<br>
+>>>neutral<br>
+>>>sad<br>
 >>>schizophrenia<br>
 
 >>test<br>
@@ -25,10 +27,12 @@ Project for Innovatefpga contest.<br>
 >>>anxiety<br>
 >>>bipolar<br>
 >>>dementia<br>
->>>depression<br>
+>>>happy<br>
+>>>neutral<br>
+>>>sad<br>
 >>>schizophrenia<br>
 
-- Sample the videos that belong to 5 classes (anxiety, bipolar, depression, dementia, schizophrenia) are converted to gray scale images of 48X48X1 size.
+- Sample the videos that belong to 7 classes (anxiety, bipolar, dementia, happy, neutral, sad, schizophrenia) are converted to gray scale images of 48X48X1 size.
 - Split data into train and test images.
 - Run machine learning model.
 
