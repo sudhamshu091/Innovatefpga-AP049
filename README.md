@@ -38,6 +38,23 @@ Project for Innovatefpga contest.<br>
 
 <h3>Real Time Emotion Recognition</h3>
 
+[Sad](outputs/real_time.jpg)
 ![](outputs/real_time.jpg)
+
+[Schizophrenia](outputs/real_time_schizophrenia.jpg)
+![](outputs/real_time_schizophrenia.jpg)
+
+[Dementia](outputs/real_time_dementia.jpg)
+![](outputs/real_time_dementia.jpg)
+
+[Bipolar](outputs/real_time_bipolar.jpg)
+![](outputs/real_time_bipolar.jpg)
+
+[Happy](outputs/real_time_happy.jpg)
+![](outputs/real_time_happy.jpg)
+
+[Anxiety](outputs/real_time_anxiety.jpg)
+![](outputs/real_time_anxiety.jpg)
+
 
 
