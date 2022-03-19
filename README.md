@@ -56,5 +56,8 @@ Project for Innovatefpga contest.<br>
 [Anxiety](outputs/real_time_anxiety.jpg)
 ![](outputs/real_time_anxiety.jpg)
 
+<h2>Audio Emotion Recognition</h2>
+
+<h2>Sensor Modelling</h2>
 
 
