@@ -38,8 +38,7 @@ Project for Innovatefpga contest.<br>
 
 <h3>Real Time Emotion Recognition</h3>
 
-[Sad](outputs/real_time.jpg)
-![](outputs/real_time.jpg)
+[Results](outputs)
 
 <h2>Audio Emotion Recognition</h2>
 
