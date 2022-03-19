@@ -61,6 +61,19 @@ Project for Innovatefpga contest.<br>
 <h2>Sensor Modelling</h2>
 
 <h3>WESAD Dataset</h3>
-
 [Link](https://archive.ics.uci.edu/ml/datasets/WESAD+%28Wearable+Stress+and+Affect+Detection%29)
+
+<h3>Tree</h3>
+
+>sensors<br>
+
+>>LSTM_model.h5<br>
+>>sensors.ipynb<br>
+>>dataset<br>
+
+>>>WESAD<br>
+>>>>S2 to S17 (contains .pkl, E4_Data.zip, quest.csv, readme and respiban.txt files in each folder)<br>
+
+>>>WESAD.txt<br>
+
 
