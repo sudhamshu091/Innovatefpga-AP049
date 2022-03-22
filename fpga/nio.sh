@@ -41,13 +41,13 @@ _this_nios2_command_shell_script=$(cd ${0%[\\/]*} && echo $(pwd 2>/dev/null)/${0
 _ACDS_ROOT=$(dirname $(dirname ${_this_nios2_command_shell_script}))
 unset _this_nios2_command_shell_script
 
-if [ ! -d "${_ACDS_ROOT}/nios2eds" ]; then
+if [ ! -d "${_ACDS_ROOT}/" ]; then
     echo "${_ACDS_ROOT}/nios2eds not found. Invalid or corrupt ACDS Install" 1>&2
     exit 1
 fi
 
 if [ -z "${QUARTUS_ROOTDIR_OVERRIDE}" ]; then
-    if [ ! -d "${_ACDS_ROOT}/quartus" ]; then
+    if [ ! -d "${_ACDS_ROOT}/" ]; then
         echo "${_ACDS_ROOT}/quartus not found. Invalid or corrupt ACDS Install" 1>&2
         exit 1
     fi
