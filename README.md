@@ -1,8 +1,10 @@
 # Innovatefpga-AP049
 [Project proposal](http://www.innovatefpga.com/cgi-bin/innovate/teams.pl?Id=AP049)
 
+<h1>Hardware Part</h1>
 <h2>1) Sensor Integration</h2>
 
+<h1>Software Part</h1>
 <h2>2) Video Emotion Recognition</h2>
 <h3>Preprocessing</h3>
 
@@ -62,5 +64,7 @@
 >>>WESAD.txt<br>
 
 <h2>4) Audio Emotion Recognition</h2>
+
+<h1>Correlation, Mental Health Disorder Diagnosis and Recommendation</h1>
 
 
