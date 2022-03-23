@@ -1,6 +1,7 @@
 # Innovatefpga-AP049
 [Project proposal](http://www.innovatefpga.com/cgi-bin/innovate/teams.pl?Id=AP049)
 
+<h2>Sensor Integration</h2>
 
 <h2>Video Emotion Recognition</h2>
 <h3>Preprocessing</h3>
