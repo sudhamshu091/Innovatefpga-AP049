@@ -1,9 +1,9 @@
 # Innovatefpga-AP049
 [Project proposal](http://www.innovatefpga.com/cgi-bin/innovate/teams.pl?Id=AP049)
 
-<h2>Sensor Integration</h2>
+<h2>1) Sensor Integration</h2>
 
-<h2>Video Emotion Recognition</h2>
+<h2>2) Video Emotion Recognition</h2>
 <h3>Preprocessing</h3>
 
 <h3>Tree</h3>
@@ -42,7 +42,7 @@
 
 [Results](outputs)
 
-<h2>Sensor Modelling</h2>
+<h2>3) Sensor Modelling</h2>
 
 <h3>WESAD Dataset</h3>
 
@@ -61,6 +61,6 @@
 
 >>>WESAD.txt<br>
 
-<h2>Audio Emotion Recognition</h2>
+<h2>4) Audio Emotion Recognition</h2>
 
 
