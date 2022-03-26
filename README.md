@@ -65,8 +65,6 @@
 
 >>>WESAD.txt<br>
 
-<h2>4) Audio Emotion Recognition</h2>
-
 <h1>Correlation, Mental Health Disorder Diagnosis and Recommendation</h1>
 
 
