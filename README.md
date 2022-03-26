@@ -55,6 +55,8 @@
 >sensors<br>
 
 >>LSTM_model.h5<br>
+>>model.h5<br>
+>>model.json<br>
 >>sensors.ipynb<br>
 >>dataset<br>
 
