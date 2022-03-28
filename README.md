@@ -3,7 +3,7 @@
 
 <h1>Hardware Part</h1>
 <h2>1) Sensor Integration</h2>
-Qsys project for integrating sensors namely Temperature, EDA, Accelerometer(Onboard), Light, Gas Sensor.
+Qsys project for integrating sensors namely Temperature, EDA, Light, Gas Sensor. On board accelerometer integration.
 <h3>Tree</h3>
 
 >fpga<br>
