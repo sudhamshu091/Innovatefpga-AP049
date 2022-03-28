@@ -3,7 +3,7 @@
 
 <h1>Hardware Part</h1>
 <h2>1) Sensor Integration</h2>
-Qsys project for integrating sensors namely Temperature, EDA, Accelerometer(Onboard) Light, Gas Sensor.
+Qsys project for integrating sensors namely Temperature, EDA, Accelerometer(Onboard), Light, Gas Sensor.
 <h3>Tree</h3>
 
 >fpga<br>
@@ -51,6 +51,11 @@ The values from the sensors are test inputs for the sensor modelling.
 ![Temperature Sensor](outputs/temp.png)
 [EDA Sensor](outputs/eda.png)
 ![EDA Sensor](outputs/eda.png)
+[Light Sensor](light.png)
+![Light Sensor](light.png)
+[Gas Sensor](gas.png)
+![Gas Sensor](gas.png)
+
 
 <h1>Software Part</h1>
 <h2>2) Video Emotion Recognition</h2>
