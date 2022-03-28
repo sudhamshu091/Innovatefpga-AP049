@@ -44,6 +44,9 @@ Qsys project for integrating sensors namely Temperature, EDA, Accelerometer(Onbo
 
 >>ADC top module, sopcinfo, sof, qsf and other files<br>
 
+[Wearable Device](sensor_proto.jpg)
+![Wearable Device](sensor_proto.jpg)
+
 The values from the sensors are test inputs for the sensor modelling.
 <h3>Plot Sensor Values</h3>
 
