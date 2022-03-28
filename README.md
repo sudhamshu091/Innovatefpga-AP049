@@ -3,9 +3,53 @@
 
 <h1>Hardware Part</h1>
 <h2>1) Sensor Integration</h2>
+Qsys project for integrating sensors namely Temperature, EDA, Light, Gas Sensor.
+<h3>Tree</h3>
+
+>fpga<br>
+
+>>DE10_NANO_QSYS<br>
+
+>>>synthesis<br>
+
+>>>>submodules<br>
+
+>>>>>submodule files<br>
+
+>>>>debuginfo,qip,regmap and Qsys verilog files<br>
+
+>>>Qsys files<br>
+
+>>RemoteSystemFiles<br>
+
+>>db<br>
+
+>>ip<br>
+
+>>>ADC_LTC2308_FIFO<br>
+
+>>>>greybox_tmp<br>
+>>>>adc verilog files<br>
+
+>>script<br>
+
+>>>DE10_NANO_ADC.sof<br>
+>>>test.bat<br>
+>>>test.sh<br>
+>>>DE10_NANO_ADC.elf<br>
+
+>>software<br>
+
+>>>Eclipse files<br>
+
+>>ADC top module, sopcinfo, sof, qsf and other files<br>
+
+The values from the sensors are test inputs for the sensor modelling.
 <h3>Plot Sensor Values</h3>
 
+[Temperature Sensor](outputs/temp.png)
 ![Temperature Sensor](outputs/temp.png)
+[EDA Sensor](outputs/eda.png)
 ![EDA Sensor](outputs/eda.png)
 
 <h1>Software Part</h1>
