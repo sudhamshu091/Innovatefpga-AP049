@@ -5,8 +5,8 @@
 <h2>1) Sensor Integration</h2>
 <h3>Plot Sensor Values</h3>
 
-![Temperature Sensor](outputs/temp_variation.png)
-![EDA Sensor](outputs/eda_variation.png)
+![Temperature Sensor](outputs/temp.png)
+![EDA Sensor](outputs/eda.png)
 
 <h1>Software Part</h1>
 <h2>2) Video Emotion Recognition</h2>
