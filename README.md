@@ -62,7 +62,7 @@ The values from the sensors are test inputs for the sensor modelling.
 
 <h1>Software Part</h1>
 <h2>2) Video Emotion Recognition</h2>
-Videos that belong to 5 catgories namely, Anxiety, Bipolar, Dementia, Happy, Neutral, Sad, Schizophrenia are collected from youtube, stock videos and online sites.
+Videos that belong to 5 catgories namely, Angry, Anxiety, Happy, Neutral, Sad are collected from youtube, stock videos and online sites.
 
 <h3>Tree</h3>
 
@@ -74,27 +74,23 @@ Videos that belong to 5 catgories namely, Anxiety, Bipolar, Dementia, Happy, Neu
 >>video.ipynb<br>
 >>train<br>
 
+>>>angry<br>
 >>>anxiety<br>
->>>bipolar<br>
->>>dementia<br>
 >>>happy<br>
 >>>neutral<br>
 >>>sad<br>
->>>schizophrenia<br>
 
 >>test<br>
 
+>>>angry<br>
 >>>anxiety<br>
->>>bipolar<br>
->>>dementia<br>
 >>>happy<br>
 >>>neutral<br>
 >>>sad<br>
->>>schizophrenia<br>
 
 <h3>Preprocessing</h3>
 
-- Sample the videos that belong to 7 classes (anxiety, bipolar, dementia, happy, neutral, sad, schizophrenia) are converted to gray scale images of 48X48X1 size.
+- Sample the videos that belong to 5 classes (angry, anxiety, happy, neutral, sad) are converted to gray scale images of 48X48X1 size.
 - Split data into train and test images.
 - Run machine learning model.
 
