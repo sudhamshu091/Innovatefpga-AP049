@@ -120,7 +120,7 @@ Videos that belong to 5 catgories namely, Angry, Anxiety, Happy, Neutral, Sad ar
 
 >>>WESAD.txt<br>
 
-Prediction of stress in a patient using live sensor data is the result.<br>
+Prediction of stress in a patient using sensor data<br>
 
 [Confidence](confidence.png)<br>
 ![](confidence.png)<br>
