@@ -96,7 +96,7 @@ Videos that belong to 5 catgories namely, Angry, Anxiety, Happy, Neutral, Sad ar
 
 <h3>Real Time Emotion Recognition</h3>
 
-[Results](outputs)
+[Confidence](outputs/Confidence_video.png)
 
 <h2>3) Sensor Modelling</h2>
 
