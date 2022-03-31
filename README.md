@@ -120,9 +120,9 @@ Videos that belong to 5 catgories namely, Angry, Anxiety, Happy, Neutral, Sad ar
 
 >>>WESAD.txt<br>
 
-[Confidence](confidence.png)<br>
+[Confidence](outputs/confidence.png)<br>
 
-![](confidence.png)<br>
+![](outputs/confidence.png)<br>
 
 <br>
 
