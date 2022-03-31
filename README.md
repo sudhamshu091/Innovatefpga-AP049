@@ -50,8 +50,8 @@ Qsys project for integrating sensors namely Temperature, EDA, Light, Gas Sensor.
 The values from the sensors are test inputs for the sensor modelling.
 <h3>Plot Sensor Values</h3>
 
-[Temperature Sensor](outputs/temp.png)
-![Temperature Sensor](outputs/temp.png)
+[Temperature Sensor](outputs/temp_val.png)
+![Temperature Sensor](outputs/temp_val.png)
 [EDA Sensor](outputs/eda.png)
 ![EDA Sensor](outputs/eda.png)
 [Light Sensor](light.png)
