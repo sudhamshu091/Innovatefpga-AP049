@@ -96,7 +96,8 @@ Videos that belong to 5 catgories namely, Angry, Anxiety, Happy, Neutral, Sad ar
 
 <h3>Real Time Emotion Recognition</h3>
 
-[Confidence](outputs/Confidence_video.png)
+[Confidence](outputs/Confidence_video.png)<br>
+[          ](outputs/Confidence_video.png)
 ![Confidence](outputs/Confidence_video.png)
 
 <h2>3) Sensor Modelling</h2>
@@ -120,7 +121,7 @@ Videos that belong to 5 catgories namely, Angry, Anxiety, Happy, Neutral, Sad ar
 
 >>>WESAD.txt<br>
 
-[Confidence](confidence.png)<br>
+[Confidence](confidence.png)
 ![](confidence.png)<br>
 
 Stress Prediction for Test Data<br>
