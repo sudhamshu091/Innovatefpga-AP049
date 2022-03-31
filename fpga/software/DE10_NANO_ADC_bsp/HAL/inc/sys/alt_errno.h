@@ -1,5 +1,5 @@
-#ifndef __ALT_ALARM_H__
-#define __ALT_ALARM_H__
+#ifndef __ALT_ERRNO_H__
+#define __ALT_ERRNO_H__
 
 /******************************************************************************
 *                                                                             *
@@ -39,88 +39,49 @@
 *                                                                             *
 ******************************************************************************/
 
-#include "alt_llist.h"
+/*
+ * errno is defined in <errno.h> so that it uses the thread local version 
+ * stored in the location pointed to by "_impure_ptr". This means that the 
+ * accesses to errno within the HAL library can cause the entirety of 
+ * of the structure pointed to by "_impure_ptr" to be added to the 
+ * users application. This can be undesirable in very small footprint systems.
+ *
+ * To avoid this happening, the HAL uses the macro ALT_ERRNO, defined below,
+ * to access errno, rather than accessing it directly. This macro will only 
+ * use the thread local version if some other code has already caused it to be 
+ * included into the system, otherwise it will use the global errno value.
+ *
+ * This causes a slight increases in code size where errno is accessed, but 
+ * can lead to significant overall benefits in very small systems. The 
+ * increase is inconsequential when compared to the size of the structure
+ * pointed to by _impure_ptr.
+ *
+ * Note that this macro accesses __errno() using an externally declared 
+ * function pointer (alt_errno). This is done so that the function call uses the
+ * subroutine call instruction via a register rather than an immediate address.
+ * This is important in the case that the code has been linked for a high
+ * address, but __errno() is not being used. In this case the weak linkage
+ * would have resulted in the instruction: "call 0" which would fail to link. 
+ */
+
+extern int* (*alt_errno) (void);
+
+/* Must define this so that values such as EBADFD are defined in errno.h. */
+#define __LINUX_ERRNO_EXTENSIONS__
+
+#include <errno.h>
+
 #include "alt_types.h"
 
-#include "priv/alt_alarm.h"
+#undef errno
 
-#ifdef __cplusplus
-extern "C"
+extern int errno;
+
+static ALT_INLINE int* alt_get_errno(void)
 {
-#endif /* __cplusplus */
-
-/*
- * "alt_alarm" is a structure type used by applications to register an alarm
- * callback function. An instance of this type must be passed as an input
- * argument to alt_alarm_start(). The user is not responsible for initialising
- * the contents of the instance. This is done by alt_alarm_start(). 
- */
-
-typedef struct alt_alarm_s alt_alarm;
-
-/* 
- * alt_alarm_start() can be called by an application/driver in order to register
- * a function for periodic callback at the system clock frequency. Be aware that
- * this callback is likely to occur in interrupt context. 
- */
-
-extern int alt_alarm_start (alt_alarm* the_alarm, 
-                            alt_u32    nticks, 
-                            alt_u32    (*callback) (void* context),
-                            void*      context);
-
-/*
- * alt_alarm_stop() is used to unregister a callback. Alternatively the callback 
- * can return zero to unregister.
- */
-
-extern void alt_alarm_stop (alt_alarm* the_alarm);
-
-/*
- * Obtain the system clock rate in ticks/s. 
- */
-
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_ticks_per_second (void)
-{
-  return _alt_tick_rate;
+  return ((alt_errno) ? alt_errno() : &errno);
 }
 
-/*
- * alt_sysclk_init() is intended to be only used by the system clock driver
- * in order to initialise the value of the clock frequency.
- */
+#define ALT_ERRNO *alt_get_errno()
 
-static ALT_INLINE int ALT_ALWAYS_INLINE alt_sysclk_init (alt_u32 nticks)
-{
-  if (! _alt_tick_rate)
-  {
-    _alt_tick_rate = nticks;
-    return 0;
-  }
-  else
-  {
-    return -1;
-  }
-}
-
-/*
- * alt_nticks() returns the elapsed number of system clock ticks since reset.
- */
-
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_nticks (void)
-{
-  return _alt_nticks;
-}
-
-/*
- * alt_tick() should only be called by the system clock driver. This is used
- * to notify the system that the system timer period has expired.
- */
-
-extern void alt_tick (void);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __ALT_ALARM_H__ */
+#endif /* __ALT_ERRNO_H__ */

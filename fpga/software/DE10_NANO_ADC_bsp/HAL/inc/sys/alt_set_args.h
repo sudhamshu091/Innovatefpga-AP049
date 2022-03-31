@@ -1,5 +1,5 @@
-#ifndef __ALT_ALARM_H__
-#define __ALT_ALARM_H__
+#ifndef __ALT_SET_ARGS_H__
+#define __ALT_SET_ARGS_H__
 
 /******************************************************************************
 *                                                                             *
@@ -39,88 +39,33 @@
 *                                                                             *
 ******************************************************************************/
 
-#include "alt_llist.h"
-#include "alt_types.h"
-
-#include "priv/alt_alarm.h"
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
 
 /*
- * "alt_alarm" is a structure type used by applications to register an alarm
- * callback function. An instance of this type must be passed as an input
- * argument to alt_alarm_start(). The user is not responsible for initialising
- * the contents of the instance. This is done by alt_alarm_start(). 
+ * The function alt_set_args() is provided in order to define the input 
+ * arguments to main(). If this function is not called before main() then the
+ * argument list passed to main() will be empty.
+ *
+ * It is expected that this function will only be used by the ihost/iclient
+ * utility.
  */
 
-typedef struct alt_alarm_s alt_alarm;
-
-/* 
- * alt_alarm_start() can be called by an application/driver in order to register
- * a function for periodic callback at the system clock frequency. Be aware that
- * this callback is likely to occur in interrupt context. 
- */
-
-extern int alt_alarm_start (alt_alarm* the_alarm, 
-                            alt_u32    nticks, 
-                            alt_u32    (*callback) (void* context),
-                            void*      context);
-
-/*
- * alt_alarm_stop() is used to unregister a callback. Alternatively the callback 
- * can return zero to unregister.
- */
-
-extern void alt_alarm_stop (alt_alarm* the_alarm);
-
-/*
- * Obtain the system clock rate in ticks/s. 
- */
-
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_ticks_per_second (void)
+static inline void alt_set_args (int argc, char** argv, char** envp)
 {
-  return _alt_tick_rate;
+  extern int    alt_argc;
+  extern char** alt_argv;
+  extern char** alt_envp;
+
+  alt_argc = argc;
+  alt_argv = argv;
+  alt_envp = envp;
 }
-
-/*
- * alt_sysclk_init() is intended to be only used by the system clock driver
- * in order to initialise the value of the clock frequency.
- */
-
-static ALT_INLINE int ALT_ALWAYS_INLINE alt_sysclk_init (alt_u32 nticks)
-{
-  if (! _alt_tick_rate)
-  {
-    _alt_tick_rate = nticks;
-    return 0;
-  }
-  else
-  {
-    return -1;
-  }
-}
-
-/*
- * alt_nticks() returns the elapsed number of system clock ticks since reset.
- */
-
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_nticks (void)
-{
-  return _alt_nticks;
-}
-
-/*
- * alt_tick() should only be called by the system clock driver. This is used
- * to notify the system that the system timer period has expired.
- */
-
-extern void alt_tick (void);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ALT_ALARM_H__ */
+ 
+#endif /* __ALT_SET_ARGS_H__ */

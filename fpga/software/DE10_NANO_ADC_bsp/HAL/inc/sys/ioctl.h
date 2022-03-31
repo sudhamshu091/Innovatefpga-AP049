@@ -1,5 +1,5 @@
-#ifndef __ALT_ALARM_H__
-#define __ALT_ALARM_H__
+#ifndef __IOCTL_H__
+#define __IOCTL_H__
 
 /******************************************************************************
 *                                                                             *
@@ -39,88 +39,52 @@
 *                                                                             *
 ******************************************************************************/
 
-#include "alt_llist.h"
-#include "alt_types.h"
-
-#include "priv/alt_alarm.h"
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
 
 /*
- * "alt_alarm" is a structure type used by applications to register an alarm
- * callback function. An instance of this type must be passed as an input
- * argument to alt_alarm_start(). The user is not responsible for initialising
- * the contents of the instance. This is done by alt_alarm_start(). 
+ * The ioctl() system call be used to initiate a variety of control operations
+ * on a file descriptor. For the most part this simply translates to a call to
+ * the ioctl() function of the associated device driver (TIOCEXCL and
+ * TIOCNXCL are notable exceptions - see ioctl.c for details).
+ *
+ * The interpretation of the ioctl requests are therefore device specific.
+ *
+ * This function is equivalent to the standard Posix ioctl() call.
  */
 
-typedef struct alt_alarm_s alt_alarm;
-
-/* 
- * alt_alarm_start() can be called by an application/driver in order to register
- * a function for periodic callback at the system clock frequency. Be aware that
- * this callback is likely to occur in interrupt context. 
- */
-
-extern int alt_alarm_start (alt_alarm* the_alarm, 
-                            alt_u32    nticks, 
-                            alt_u32    (*callback) (void* context),
-                            void*      context);
+extern int ioctl (int fd, int req, void* arg);
 
 /*
- * alt_alarm_stop() is used to unregister a callback. Alternatively the callback 
- * can return zero to unregister.
+ * list of ioctl calls handled by the system ioctl implementation.
  */
 
-extern void alt_alarm_stop (alt_alarm* the_alarm);
+#define TIOCEXCL 0x740d /* exclusive use of the device */
+#define TIOCNXCL 0x740e /* allow multiple use of the device */
 
 /*
- * Obtain the system clock rate in ticks/s. 
+ * ioctl calls which can be handled by device drivers.
  */
 
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_ticks_per_second (void)
-{
-  return _alt_tick_rate;
-}
+#define TIOCOUTQ 0x7472 /* get output queue size */
+#define TIOCMGET 0x741d /* get termios flags */
+#define TIOCMSET 0x741a /* set termios flags */
 
 /*
- * alt_sysclk_init() is intended to be only used by the system clock driver
- * in order to initialise the value of the clock frequency.
+ * ioctl calls specific to JTAG UART.
  */
 
-static ALT_INLINE int ALT_ALWAYS_INLINE alt_sysclk_init (alt_u32 nticks)
-{
-  if (! _alt_tick_rate)
-  {
-    _alt_tick_rate = nticks;
-    return 0;
-  }
-  else
-  {
-    return -1;
-  }
-}
+#define TIOCSTIMEOUT 0x6a01 /* Set Timeout before assuming no host present */
+#define TIOCGCONNECTED 0x6a02 /* Get indication of whether host is connected */
 
 /*
- * alt_nticks() returns the elapsed number of system clock ticks since reset.
+ *
  */
-
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_nticks (void)
-{
-  return _alt_nticks;
-}
-
-/*
- * alt_tick() should only be called by the system clock driver. This is used
- * to notify the system that the system timer period has expired.
- */
-
-extern void alt_tick (void);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ALT_ALARM_H__ */
+  
+#endif /* __IOCTL_H__ */

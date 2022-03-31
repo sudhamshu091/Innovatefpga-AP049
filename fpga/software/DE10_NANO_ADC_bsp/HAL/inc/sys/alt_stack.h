@@ -1,6 +1,3 @@
-#ifndef __ALT_ALARM_H__
-#define __ALT_ALARM_H__
-
 /******************************************************************************
 *                                                                             *
 * License Agreement                                                           *
@@ -29,98 +26,101 @@
 * This agreement shall be governed in all respects by the laws of the State   *
 * of California and by the laws of the United States of America.              *
 *                                                                             *
-* Altera does not recommend, suggest or require that this reference design    *
-* file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
 
-/******************************************************************************
-*                                                                             *
-* THIS IS A LIBRARY READ-ONLY SOURCE FILE. DO NOT EDIT.                       *
-*                                                                             *
-******************************************************************************/
+#ifndef __ALT_STACK_H__
+#define __ALT_STACK_H__
 
-#include "alt_llist.h"
+/*
+ * alt_stack.h is the nios2 specific implementation of functions used by the
+ * stack overflow code.
+ */
+
+#include "nios2.h"
+
 #include "alt_types.h"
-
-#include "priv/alt_alarm.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
 
-/*
- * "alt_alarm" is a structure type used by applications to register an alarm
- * callback function. An instance of this type must be passed as an input
- * argument to alt_alarm_start(). The user is not responsible for initialising
- * the contents of the instance. This is done by alt_alarm_start(). 
- */
 
-typedef struct alt_alarm_s alt_alarm;
+extern char * alt_stack_limit_value;
 
-/* 
- * alt_alarm_start() can be called by an application/driver in order to register
- * a function for periodic callback at the system clock frequency. Be aware that
- * this callback is likely to occur in interrupt context. 
- */
+#ifdef ALT_EXCEPTION_STACK
+extern char __alt_exception_stack_pointer[];  /* set by the linker */
+#endif /* ALT_EXCEPTION_STACK */
 
-extern int alt_alarm_start (alt_alarm* the_alarm, 
-                            alt_u32    nticks, 
-                            alt_u32    (*callback) (void* context),
-                            void*      context);
 
 /*
- * alt_alarm_stop() is used to unregister a callback. Alternatively the callback 
- * can return zero to unregister.
+ * alt_stack_limit can be called to determine the current value of the stack
+ * limit register.
  */
 
-extern void alt_alarm_stop (alt_alarm* the_alarm);
-
-/*
- * Obtain the system clock rate in ticks/s. 
- */
-
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_ticks_per_second (void)
+static ALT_INLINE char * ALT_ALWAYS_INLINE alt_stack_limit (void)
 {
-  return _alt_tick_rate;
+  char * limit;
+  NIOS2_READ_ET(limit);
+
+  return limit; 
 }
 
 /*
- * alt_sysclk_init() is intended to be only used by the system clock driver
- * in order to initialise the value of the clock frequency.
+ * alt_stack_pointer can be called to determine the current value of the stack
+ * pointer register.
  */
 
-static ALT_INLINE int ALT_ALWAYS_INLINE alt_sysclk_init (alt_u32 nticks)
+static ALT_INLINE char * ALT_ALWAYS_INLINE alt_stack_pointer (void)
 {
-  if (! _alt_tick_rate)
-  {
-    _alt_tick_rate = nticks;
-    return 0;
-  }
-  else
-  {
-    return -1;
-  }
+  char * pointer;
+  NIOS2_READ_SP(pointer);
+
+  return pointer; 
+}
+
+
+#ifdef ALT_EXCEPTION_STACK
+
+/*
+ * alt_exception_stack_pointer returns the normal stack pointer from
+ * where it is stored on the exception stack (uppermost 4 bytes).  This
+ * is really only useful during exception processing, and is only
+ * available if a separate exception stack has been configured.
+ */
+
+static ALT_INLINE char * ALT_ALWAYS_INLINE alt_exception_stack_pointer (void)
+{
+  return (char *) *(alt_u32 *)(__alt_exception_stack_pointer - sizeof(alt_u32));
+}
+
+#endif /* ALT_EXCEPTION_STACK */
+
+
+/*
+ * alt_set_stack_limit can be called to update the current value of the stack
+ * limit register.
+ */
+
+static ALT_INLINE void ALT_ALWAYS_INLINE alt_set_stack_limit (char * limit)
+{
+  alt_stack_limit_value = limit;
+  NIOS2_WRITE_ET(limit);
 }
 
 /*
- * alt_nticks() returns the elapsed number of system clock ticks since reset.
+ * alt_report_stack_overflow reports that a stack overflow happened.
  */
 
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_nticks (void)
+static ALT_INLINE void ALT_ALWAYS_INLINE alt_report_stack_overflow (void)
 {
-  return _alt_nticks;
+  NIOS2_REPORT_STACK_OVERFLOW();
 }
 
-/*
- * alt_tick() should only be called by the system clock driver. This is used
- * to notify the system that the system timer period has expired.
- */
-
-extern void alt_tick (void);
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
-#endif /* __ALT_ALARM_H__ */
+#endif /* __ALT_STACK_H__ */
+

@@ -1,5 +1,5 @@
-#ifndef __ALT_ALARM_H__
-#define __ALT_ALARM_H__
+#ifndef __ALT_DEV_H__
+#define __ALT_DEV_H__
 
 /******************************************************************************
 *                                                                             *
@@ -39,10 +39,9 @@
 *                                                                             *
 ******************************************************************************/
 
-#include "alt_llist.h"
-#include "alt_types.h"
-
-#include "priv/alt_alarm.h"
+#include "system.h"
+#include "sys/alt_llist.h"
+#include "priv/alt_dev_llist.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -50,77 +49,67 @@ extern "C"
 #endif /* __cplusplus */
 
 /*
- * "alt_alarm" is a structure type used by applications to register an alarm
- * callback function. An instance of this type must be passed as an input
- * argument to alt_alarm_start(). The user is not responsible for initialising
- * the contents of the instance. This is done by alt_alarm_start(). 
+ * The value ALT_IRQ_NOT_CONNECTED is used to represent an unconnected 
+ * interrupt line. It cannot evaluate to a valid interrupt number.
  */
 
-typedef struct alt_alarm_s alt_alarm;
+#define ALT_IRQ_NOT_CONNECTED (-1)
+
+typedef struct alt_dev_s alt_dev;
+
+struct stat;
+
+/*
+ * The file descriptor structure definition.
+ */
+
+typedef struct alt_fd_s
+{
+  alt_dev* dev;
+  alt_u8*  priv;
+  int      fd_flags;
+} alt_fd;
 
 /* 
- * alt_alarm_start() can be called by an application/driver in order to register
- * a function for periodic callback at the system clock frequency. Be aware that
- * this callback is likely to occur in interrupt context. 
+ * The device structure definition. 
  */
-
-extern int alt_alarm_start (alt_alarm* the_alarm, 
-                            alt_u32    nticks, 
-                            alt_u32    (*callback) (void* context),
-                            void*      context);
+ 
+struct alt_dev_s {
+  alt_llist    llist;     /* for internal use */
+  const char*  name; 
+  int (*open)  (alt_fd* fd, const char* name, int flags, int mode);
+  int (*close) (alt_fd* fd);
+  int (*read)  (alt_fd* fd, char* ptr, int len);
+  int (*write) (alt_fd* fd, const char* ptr, int len); 
+  int (*lseek) (alt_fd* fd, int ptr, int dir);
+  int (*fstat) (alt_fd* fd, struct stat* buf);
+  int (*ioctl) (alt_fd* fd, int req, void* arg);
+};
 
 /*
- * alt_alarm_stop() is used to unregister a callback. Alternatively the callback 
- * can return zero to unregister.
+ * Functions used to register device for access through the C standard 
+ * library.
+ *
+ * The only difference between alt_dev_reg() and alt_fs_reg() is the 
+ * interpretation that open() places on the device name. In the case of
+ * alt_dev_reg the device is assumed to be a particular character device,
+ * and so there must be an exact match in the name for open to succeed. 
+ * In the case of alt_fs_reg() the name of the device is treated as the
+ * mount point for a directory, and so any call to open() where the name 
+ * is the root of the device filename will succeed. 
  */
 
-extern void alt_alarm_stop (alt_alarm* the_alarm);
+extern int alt_fs_reg  (alt_dev* dev); 
 
-/*
- * Obtain the system clock rate in ticks/s. 
- */
-
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_ticks_per_second (void)
+static ALT_INLINE int alt_dev_reg (alt_dev* dev)
 {
-  return _alt_tick_rate;
+  extern alt_llist alt_dev_list;
+
+  return alt_dev_llist_insert ((alt_dev_llist*) dev, &alt_dev_list);
 }
-
-/*
- * alt_sysclk_init() is intended to be only used by the system clock driver
- * in order to initialise the value of the clock frequency.
- */
-
-static ALT_INLINE int ALT_ALWAYS_INLINE alt_sysclk_init (alt_u32 nticks)
-{
-  if (! _alt_tick_rate)
-  {
-    _alt_tick_rate = nticks;
-    return 0;
-  }
-  else
-  {
-    return -1;
-  }
-}
-
-/*
- * alt_nticks() returns the elapsed number of system clock ticks since reset.
- */
-
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_nticks (void)
-{
-  return _alt_nticks;
-}
-
-/*
- * alt_tick() should only be called by the system clock driver. This is used
- * to notify the system that the system timer period has expired.
- */
-
-extern void alt_tick (void);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ALT_ALARM_H__ */
+ 
+#endif /* __ALT_DEV_H__ */

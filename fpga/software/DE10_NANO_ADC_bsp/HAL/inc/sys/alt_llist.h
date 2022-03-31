@@ -1,5 +1,5 @@
-#ifndef __ALT_ALARM_H__
-#define __ALT_ALARM_H__
+#ifndef __ALT_LIST_H__
+#define __ALT_LIST_H__
 
 /******************************************************************************
 *                                                                             *
@@ -39,10 +39,15 @@
 *                                                                             *
 ******************************************************************************/
 
-#include "alt_llist.h"
 #include "alt_types.h"
 
-#include "priv/alt_alarm.h"
+/*
+ * alt_llist.h defines structures and functions for use in manipulating linked
+ * lists. A list is considered to be constructed from a chain of objects of
+ * type alt_llist, with one object being defined to be the head element. 
+ *
+ * A list is considered to be empty if it only contains the head element.
+ */
 
 #ifdef __cplusplus
 extern "C"
@@ -50,77 +55,69 @@ extern "C"
 #endif /* __cplusplus */
 
 /*
- * "alt_alarm" is a structure type used by applications to register an alarm
- * callback function. An instance of this type must be passed as an input
- * argument to alt_alarm_start(). The user is not responsible for initialising
- * the contents of the instance. This is done by alt_alarm_start(). 
+ * alt_llist is the structure used to represent an element within a linked
+ * list.
  */
 
-typedef struct alt_alarm_s alt_alarm;
+typedef struct alt_llist_s alt_llist;
 
-/* 
- * alt_alarm_start() can be called by an application/driver in order to register
- * a function for periodic callback at the system clock frequency. Be aware that
- * this callback is likely to occur in interrupt context. 
- */
-
-extern int alt_alarm_start (alt_alarm* the_alarm, 
-                            alt_u32    nticks, 
-                            alt_u32    (*callback) (void* context),
-                            void*      context);
+struct alt_llist_s {
+  alt_llist* next;     /* Pointer to the next element in the list. */
+  alt_llist* previous; /* Pointer to the previous element in the list. */
+};
 
 /*
- * alt_alarm_stop() is used to unregister a callback. Alternatively the callback 
- * can return zero to unregister.
+ * ALT_LLIST_HEAD is a macro that can be used to create the head of a new 
+ * linked list. This is named "head". The head element is initialised to 
+ * represent an empty list.  
  */
 
-extern void alt_alarm_stop (alt_alarm* the_alarm);
+#define ALT_LLIST_HEAD(head) alt_llist head = {&head, &head}
 
 /*
- * Obtain the system clock rate in ticks/s. 
+ * ALT_LLIST_ENTRY is a macro used to define an uninitialised linked list
+ * entry. This is used to reserve space in structure initialisation for
+ * structures that inherit form alt_llist.
  */
 
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_ticks_per_second (void)
+#define ALT_LLIST_ENTRY {0, 0}
+
+/*
+ * alt_llist_insert() insert adds the linked list entry "entry" as the 
+ * first entry in the linked list "list". "list" is the list head element.  
+ */
+
+static ALT_INLINE void ALT_ALWAYS_INLINE alt_llist_insert(alt_llist* list, 
+                alt_llist* entry)
 {
-  return _alt_tick_rate;
+  entry->previous = list;
+  entry->next     = list->next;
+
+  list->next->previous = entry;
+  list->next           = entry;
 }
 
 /*
- * alt_sysclk_init() is intended to be only used by the system clock driver
- * in order to initialise the value of the clock frequency.
+ * alt_llist_remove() is called to remove an element from a linked list. The
+ * input argument is the element to remove.
  */
-
-static ALT_INLINE int ALT_ALWAYS_INLINE alt_sysclk_init (alt_u32 nticks)
+     
+static ALT_INLINE void ALT_ALWAYS_INLINE alt_llist_remove(alt_llist* entry)
 {
-  if (! _alt_tick_rate)
-  {
-    _alt_tick_rate = nticks;
-    return 0;
-  }
-  else
-  {
-    return -1;
-  }
-}
+  entry->next->previous = entry->previous;
+  entry->previous->next = entry->next;
 
-/*
- * alt_nticks() returns the elapsed number of system clock ticks since reset.
- */
+  /* 
+   * Set the entry to point to itself, so that any further calls to
+   * alt_llist_remove() are harmless.
+   */
 
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_nticks (void)
-{
-  return _alt_nticks;
-}
-
-/*
- * alt_tick() should only be called by the system clock driver. This is used
- * to notify the system that the system timer period has expired.
- */
-
-extern void alt_tick (void);
+  entry->previous = entry;
+  entry->next     = entry;
+} 
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ALT_ALARM_H__ */
+ 
+#endif /* __ALT_LLIST_H__ */ 

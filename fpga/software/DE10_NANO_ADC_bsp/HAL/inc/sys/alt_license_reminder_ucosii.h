@@ -1,11 +1,11 @@
-#ifndef __ALT_ALARM_H__
-#define __ALT_ALARM_H__
+#ifndef __ALT_LICENSE_REMINDER_UCOSII_H__
+#define __ALT_LICENSE_REMINDER_UCOSII_H__
 
 /******************************************************************************
 *                                                                             *
 * License Agreement                                                           *
 *                                                                             *
-* Copyright (c) 2004 Altera Corporation, San Jose, California, USA.           *
+* Copyright (c) 2006 Altera Corporation, San Jose, California, USA.           *
 * All rights reserved.                                                        *
 *                                                                             *
 * Permission is hereby granted, free of charge, to any person obtaining a     *
@@ -39,88 +39,39 @@
 *                                                                             *
 ******************************************************************************/
 
-#include "alt_llist.h"
-#include "alt_types.h"
+#include <stdio.h>
 
-#include "priv/alt_alarm.h"
+#define ALT_LICENSE_REMINDER_UCOSII_STRING                                     \
+    "============== Software License Reminder ===============\n"               \
+    "\n"                                                                       \
+    "uC/OS-II is provided in source form for FREE evaluation,\n"               \
+    "for educational use, or for peaceful research. If you\n"                  \
+    "plan on using uC/OS-II in a commercial product you need\n"                \
+    "to contact Micrium to properly license its use in your\n"                 \
+    "product. Micrium provides ALL the source code on the\n"                   \
+    "Altera distribution for your convenience and to help you\n"               \
+    "experience uC/OS-II. The fact that the source is provided\n"              \
+    "does NOT mean that you can use it without paying a\n"                     \
+    "licensing fee. Please help us continue to provide the\n"                  \
+    "Embedded community with the finest software available.\n"                 \
+    "Your honesty is greatly appreciated.\n"                                   \
+    "\n"                                                                       \
+    "Please contact:\n"                                                        \
+    "\n"                                                                       \
+    "M I C R I U M\n"                                                          \
+    "949 Crestview Circle\n"                                                   \
+    "Weston,  FL 33327-1848\n"                                                 \
+    "U.S.A.\n"                                                                 \
+    "\n"                                                                       \
+    "Phone : +1 954 217 2036\n"                                                \
+    "FAX   : +1 954 217 2037\n"                                                \
+    "WEB   : www.micrium.com\n"                                                \
+    "E-mail: Sales@Micrium.com\n"                                              \
+    "\n"                                                                       \
+    "========================================================\n"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif /* __cplusplus */
+#define alt_license_reminder_ucosii() puts(ALT_LICENSE_REMINDER_UCOSII_STRING)
 
-/*
- * "alt_alarm" is a structure type used by applications to register an alarm
- * callback function. An instance of this type must be passed as an input
- * argument to alt_alarm_start(). The user is not responsible for initialising
- * the contents of the instance. This is done by alt_alarm_start(). 
- */
 
-typedef struct alt_alarm_s alt_alarm;
+#endif /* __ALT_LICENSE_REMINDER_UCOSII_H__ */
 
-/* 
- * alt_alarm_start() can be called by an application/driver in order to register
- * a function for periodic callback at the system clock frequency. Be aware that
- * this callback is likely to occur in interrupt context. 
- */
-
-extern int alt_alarm_start (alt_alarm* the_alarm, 
-                            alt_u32    nticks, 
-                            alt_u32    (*callback) (void* context),
-                            void*      context);
-
-/*
- * alt_alarm_stop() is used to unregister a callback. Alternatively the callback 
- * can return zero to unregister.
- */
-
-extern void alt_alarm_stop (alt_alarm* the_alarm);
-
-/*
- * Obtain the system clock rate in ticks/s. 
- */
-
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_ticks_per_second (void)
-{
-  return _alt_tick_rate;
-}
-
-/*
- * alt_sysclk_init() is intended to be only used by the system clock driver
- * in order to initialise the value of the clock frequency.
- */
-
-static ALT_INLINE int ALT_ALWAYS_INLINE alt_sysclk_init (alt_u32 nticks)
-{
-  if (! _alt_tick_rate)
-  {
-    _alt_tick_rate = nticks;
-    return 0;
-  }
-  else
-  {
-    return -1;
-  }
-}
-
-/*
- * alt_nticks() returns the elapsed number of system clock ticks since reset.
- */
-
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_nticks (void)
-{
-  return _alt_nticks;
-}
-
-/*
- * alt_tick() should only be called by the system clock driver. This is used
- * to notify the system that the system timer period has expired.
- */
-
-extern void alt_tick (void);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __ALT_ALARM_H__ */

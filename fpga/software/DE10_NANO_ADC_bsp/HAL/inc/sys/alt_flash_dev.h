@@ -1,11 +1,9 @@
-#ifndef __ALT_ALARM_H__
-#define __ALT_ALARM_H__
-
+#ifndef __ALT_FLASH_DEV_H__
 /******************************************************************************
 *                                                                             *
 * License Agreement                                                           *
 *                                                                             *
-* Copyright (c) 2004 Altera Corporation, San Jose, California, USA.           *
+* Copyright (c) 2015 Altera Corporation, San Jose, California, USA.           *
 * All rights reserved.                                                        *
 *                                                                             *
 * Permission is hereby granted, free of charge, to any person obtaining a     *
@@ -39,88 +37,64 @@
 *                                                                             *
 ******************************************************************************/
 
-#include "alt_llist.h"
+/******************************************************************************
+*                                                                             *
+* Alt_flash_dev.h - Generic Flash device interfaces                           *
+*                                                                             *
+* Author PRR                                                                  *
+*                                                                             *
+******************************************************************************/
+#define __ALT_FLASH_DEV_H__
+
+#include "alt_flash_types.h"
+#include "sys/alt_llist.h"
+#include "priv/alt_dev_llist.h"
+
 #include "alt_types.h"
 
-#include "priv/alt_alarm.h"
+typedef struct alt_flash_dev alt_flash_dev; 
+typedef alt_flash_dev alt_flash_fd;
 
-#ifdef __cplusplus
-extern "C"
+static ALT_INLINE int alt_flash_device_register( alt_flash_fd* fd)
 {
-#endif /* __cplusplus */
+  extern alt_llist alt_flash_dev_list;
 
-/*
- * "alt_alarm" is a structure type used by applications to register an alarm
- * callback function. An instance of this type must be passed as an input
- * argument to alt_alarm_start(). The user is not responsible for initialising
- * the contents of the instance. This is done by alt_alarm_start(). 
- */
-
-typedef struct alt_alarm_s alt_alarm;
-
-/* 
- * alt_alarm_start() can be called by an application/driver in order to register
- * a function for periodic callback at the system clock frequency. Be aware that
- * this callback is likely to occur in interrupt context. 
- */
-
-extern int alt_alarm_start (alt_alarm* the_alarm, 
-                            alt_u32    nticks, 
-                            alt_u32    (*callback) (void* context),
-                            void*      context);
-
-/*
- * alt_alarm_stop() is used to unregister a callback. Alternatively the callback 
- * can return zero to unregister.
- */
-
-extern void alt_alarm_stop (alt_alarm* the_alarm);
-
-/*
- * Obtain the system clock rate in ticks/s. 
- */
-
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_ticks_per_second (void)
-{
-  return _alt_tick_rate;
+  return alt_dev_llist_insert ((alt_dev_llist*) fd, &alt_flash_dev_list);
 }
 
-/*
- * alt_sysclk_init() is intended to be only used by the system clock driver
- * in order to initialise the value of the clock frequency.
- */
+typedef alt_flash_dev* (*alt_flash_open)(alt_flash_dev* flash, 
+                                         const char* name );
+typedef int (*alt_flash_close)(alt_flash_dev* flash_info);
 
-static ALT_INLINE int ALT_ALWAYS_INLINE alt_sysclk_init (alt_u32 nticks)
+typedef int (*alt_flash_write)( alt_flash_dev* flash, int offset, 
+                                const void* src_addr, int length );
+
+typedef int (*alt_flash_get_flash_info)( alt_flash_dev* flash, flash_region** info, 
+                                          int* number_of_regions);
+typedef int (*alt_flash_write_block)( alt_flash_dev* flash, int block_offset, 
+                                      int data_offset, const void* data, 
+                                      int length);
+typedef int (*alt_flash_erase_block)( alt_flash_dev* flash, int offset);
+typedef int (*alt_flash_read)(alt_flash_dev* flash, int offset, 
+                              void* dest_addr, int length );
+typedef int (*alt_flash_lock)(alt_flash_dev* flash, alt_u32 sectors_to_lock);						  
+
+struct alt_flash_dev
 {
-  if (! _alt_tick_rate)
-  {
-    _alt_tick_rate = nticks;
-    return 0;
-  }
-  else
-  {
-    return -1;
-  }
-}
+  alt_llist                 llist;
+  const char*               name;
+  alt_flash_open            open;
+  alt_flash_close           close;
+  alt_flash_write           write;
+  alt_flash_read            read;
+  alt_flash_get_flash_info  get_info;
+  alt_flash_erase_block     erase_block;
+  alt_flash_write_block     write_block;
+  void*                     base_addr;
+  int                       length;
+  int                       number_of_regions;
+  flash_region              region_info[ALT_MAX_NUMBER_OF_FLASH_REGIONS]; 
+  alt_flash_lock            lock;
+};
 
-/*
- * alt_nticks() returns the elapsed number of system clock ticks since reset.
- */
-
-static ALT_INLINE alt_u32 ALT_ALWAYS_INLINE alt_nticks (void)
-{
-  return _alt_nticks;
-}
-
-/*
- * alt_tick() should only be called by the system clock driver. This is used
- * to notify the system that the system timer period has expired.
- */
-
-extern void alt_tick (void);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __ALT_ALARM_H__ */
+#endif /* __ALT_FLASH_DEV_H__ */
