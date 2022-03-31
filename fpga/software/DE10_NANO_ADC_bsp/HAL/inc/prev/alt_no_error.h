@@ -1,5 +1,5 @@
-#ifndef __ALT_PRIV_ALARM_H__
-#define __ALT_PRIV_ALARM_H__
+#ifndef __ALT_NO_ERROR_H__
+#define __ALT_NO_ERROR_H__
 
 /******************************************************************************
 *                                                                             *
@@ -41,61 +41,37 @@
 
 #include "alt_types.h"
 
-/*
- * This header provides the internal defenitions required by the public 
- * interface alt_alarm.h. These variables and structures are not guaranteed to 
- * exist in future implementations of the HAL.
- */
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
 
 /*
- * "alt_alarm_s" is a structure type used to maintain lists of alarm callback
- * functions.
- */
-
-struct alt_alarm_s
-{
-  alt_llist llist;       /* linked list */
-  alt_u32 time;          /* time in system ticks of the callback */
-  alt_u32 (*callback) (void* context); /* callback function. The return 
-                          * value is the period for the next callback; where 
-                          * zero indicates that the alarm should be removed 
-                          * from the list. 
-                          */
-  alt_u8 rollover;       /* set when desired alarm time + current time causes
-                            overflow, to prevent premature alarm */
-  void* context;         /* Argument for the callback */
-};
-
-/*
- * "_alt_tick_rate" is a global variable used to store the system clock rate 
- * in ticks per second. This is initialised to zero, which coresponds to there
- * being no system clock available. 
+ * alt_no_error() is a dummy function used by alt_sem.h and alt_flag.h. It
+ * substitutes for functions that have a return code by creating a function 
+ * that always returns zero. 
  *
- * It is then set to it's final value by the system clock driver through a call
- * to alt_sysclk_init(). 
+ * This may seem a little obscure, but what happens is that the compiler can 
+ * then optomise away the call to this function, and any code written which
+ * handles the error path (i.e. non zero return values). 
+ *
+ * This allows code to be written which correctly use the uC/OS-II semaphore
+ * and flag utilities, without the use of those utilities impacting on 
+ * excutables built for a single threaded HAL environment.
+ *
+ * This function is considered to be part of the internal implementation of
+ * the HAL, and should not be called directly by application code or device
+ * drivers. It is not guaranteed to be preserved in future versions of the
+ * HAL.
  */
 
-extern alt_u32 _alt_tick_rate;
-
-/*
- * "_alt_nticks" is a global variable which records the elapsed number of 
- * system clock ticks since the last call to settimeofday() or since reset if
- * settimeofday() has not been called.
- */
-
-extern volatile alt_u32 _alt_nticks;
-
-/* The list of registered alarms. */
-
-extern alt_llist alt_alarm_list;
+static ALT_INLINE int ALT_ALWAYS_INLINE alt_no_error (void)
+{
+  return 0;
+}
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __ALT_PRIV_ALARM_H__ */
+#endif /* __ALT_NO_ERROR_H__ */

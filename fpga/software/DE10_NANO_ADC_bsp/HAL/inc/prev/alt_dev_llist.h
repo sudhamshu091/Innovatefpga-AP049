@@ -1,5 +1,5 @@
-#ifndef __ALT_PRIV_ALARM_H__
-#define __ALT_PRIV_ALARM_H__
+#ifndef __ALT_DEV_LLIST_H__
+#define __ALT_DEV_LLIST_H__
 
 /******************************************************************************
 *                                                                             *
@@ -39,12 +39,13 @@
 *                                                                             *
 ******************************************************************************/
 
+#include "sys/alt_llist.h"
 #include "alt_types.h"
 
 /*
- * This header provides the internal defenitions required by the public 
- * interface alt_alarm.h. These variables and structures are not guaranteed to 
- * exist in future implementations of the HAL.
+ * This header provides the internal defenitions required to control file 
+ * access. These variables and functions are not guaranteed to exist in 
+ * future implementations of the HAL.
  */
 
 #ifdef __cplusplus
@@ -53,49 +54,24 @@ extern "C"
 #endif /* __cplusplus */
 
 /*
- * "alt_alarm_s" is a structure type used to maintain lists of alarm callback
- * functions.
+ * The alt_dev_llist is an internal structure used to form a common base 
+ * class for all device types. The use of this structure allows common code
+ * to be used to manipulate the various device lists.
  */
 
-struct alt_alarm_s
-{
-  alt_llist llist;       /* linked list */
-  alt_u32 time;          /* time in system ticks of the callback */
-  alt_u32 (*callback) (void* context); /* callback function. The return 
-                          * value is the period for the next callback; where 
-                          * zero indicates that the alarm should be removed 
-                          * from the list. 
-                          */
-  alt_u8 rollover;       /* set when desired alarm time + current time causes
-                            overflow, to prevent premature alarm */
-  void* context;         /* Argument for the callback */
-};
+typedef struct {
+  alt_llist llist;
+  const char* name;
+} alt_dev_llist;
 
 /*
- * "_alt_tick_rate" is a global variable used to store the system clock rate 
- * in ticks per second. This is initialised to zero, which coresponds to there
- * being no system clock available. 
  *
- * It is then set to it's final value by the system clock driver through a call
- * to alt_sysclk_init(). 
  */
 
-extern alt_u32 _alt_tick_rate;
-
-/*
- * "_alt_nticks" is a global variable which records the elapsed number of 
- * system clock ticks since the last call to settimeofday() or since reset if
- * settimeofday() has not been called.
- */
-
-extern volatile alt_u32 _alt_nticks;
-
-/* The list of registered alarms. */
-
-extern alt_llist alt_alarm_list;
+extern int alt_dev_llist_insert (alt_dev_llist* dev, alt_llist* list);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __ALT_PRIV_ALARM_H__ */
+#endif /* __ALT_DEV_LLIST_H__ */
