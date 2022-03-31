@@ -125,9 +125,17 @@ Prediction of stress in a patient using live sensor data is the result.<br>
 ![](outputs/prediction_100_values.png)<br>
 [Stress Prediction with 200 values of test data](outputs/prediction_200_values.png)<br>
 ![](outputs/prediction_200_values.png)<br>
-[Real time Stress Prediction](outputs/real_time_stress_prediction.png)<br>
-![]([Real time Stress Prediction](outputs/real_time_stress_prediction.png)<br>
+[Confidence](confidence.png)<br>
+![](confidence.png)<br>
 
 <h1>Correlation, Mental Health Disorder Diagnosis and Recommendation</h1>
-
-
+[Temperature](outputs/temp.png)<br>
+![](outputs/temp.png)<br>
+[GSR](outputs/gsr.png)<br>
+![](outputs/gsr.png)<br>
+[ACC](outputs/acc.png)<br>
+![](outputs/acc.png)<br>
+[Correlation](outputs/corr.png)<br>
+![](outputs/corr.png)<br>
+[Real time Stress Prediction](outputs/real_time_stress_prediction.png)<br>
+![](outputs/real_time_stress_prediction.png)<br>
