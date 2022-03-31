@@ -32,81 +32,44 @@
 
 #include <errno.h>
 
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "priv/alt_file.h"
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
+ * alt_fd_lock() is called as a consequence of an ioctl call to gain exclusive
+ * access to a device, i.e.:
  *
- * The remaining input arguments are:
+ * ioctl (fd, TIOCEXCL, NULL);
  *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
+ * If there are no other open file descriptors which reference the same
+ * device, then alt_fd_lock() will grant the lock. Further calls to open() 
+ * for this device will fail until the lock is released.
  *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
+ * This is done by calling close() for this file descriptor, or by calling:
+ *
+ * ioctl (fd, TIOCNXCL, NULL);
+ *
+ * The return value is zero for success, or negative in the case of failure.
+ */
 
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
+int alt_fd_lock (alt_fd* fd)
 {
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
- 
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
+  int i;
+  int rc = 0;
 
-      return 0;
-    }
-    else
-    {
-      return -EINVAL;
-    }
-  }
-  else
+  ALT_SEM_PEND(alt_fd_list_lock, 0);
+
+  for (i = 0; i < alt_max_fd; i++)
   {
-    return -ENOTSUP;
+    if ((&alt_fd_list[i] != fd) && (alt_fd_list[i].dev == fd->dev))
+    {
+      rc = -EACCES;
+      goto alt_fd_lock_exit;
+    }
   }
+  fd->fd_flags |= ALT_FD_EXCL;
+
+ alt_fd_lock_exit:
+
+  ALT_SEM_POST(alt_fd_list_lock);
+  return rc;
 }

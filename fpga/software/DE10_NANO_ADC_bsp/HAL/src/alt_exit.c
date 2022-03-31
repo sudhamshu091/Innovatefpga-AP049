@@ -30,83 +30,42 @@
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
 
-#include <errno.h>
-
-#include "sys/alt_alarm.h"
 #include "sys/alt_irq.h"
+#include "sys/alt_sim.h"
+#include "os/alt_hooks.h"
+#include "os/alt_syscall.h"
 
+#include "alt_types.h"
+#include "sys/alt_log_printf.h"
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
+ * _exit() is called by exit() in order to terminate the current process. 
+ * Typically this is called when main() completes. It should never return. 
+ * Since there is nowhere to go once this process completes, this 
+ * implementation simply blocks forever.
  *
- * The remaining input arguments are:
+ * Note that interrupts are not disabled so that execution outside of this
+ * thread is allowed to continue. 
  *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
- *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
+ * ALT_EXIT is mapped onto the _exit() system call in alt_syscall.h
+ */
 
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
+void ALT_EXIT (int exit_code)
 {
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
- 
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
+  /* ALT_LOG - please see HAL/inc/alt_log_printf.h for details */
+  ALT_LOG_PRINT_BOOT("[alt_exit.c] Entering _exit() function.\r\n");
+  ALT_LOG_PRINT_BOOT("[alt_exit.c] Exit code from main was %d.\r\n",exit_code);
+  /* Stop all other threads */
 
-      return 0;
-    }
-    else
-    {
-      return -EINVAL;
-    }
-  }
-  else
-  {
-    return -ENOTSUP;
-  }
+  ALT_LOG_PRINT_BOOT("[alt_exit.c] Calling ALT_OS_STOP().\r\n");
+  ALT_OS_STOP();
+
+  /* Provide notification to the simulator that we've stopped */
+
+  ALT_LOG_PRINT_BOOT("[alt_exit.c] Calling ALT_SIM_HALT().\r\n");
+  ALT_SIM_HALT(exit_code);
+
+  /* spin forever, since there's no where to go back to */
+
+  ALT_LOG_PRINT_BOOT("[alt_exit.c] Spinning forever.\r\n");
+  while (1);
 }

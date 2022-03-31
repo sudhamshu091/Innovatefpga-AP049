@@ -2,7 +2,7 @@
 *                                                                             *
 * License Agreement                                                           *
 *                                                                             *
-* Copyright (c) 2004 Altera Corporation, San Jose, California, USA.           *
+* Copyright (c) 2006 Altera Corporation, San Jose, California, USA.           *
 * All rights reserved.                                                        *
 *                                                                             *
 * Permission is hereby granted, free of charge, to any person obtaining a     *
@@ -30,83 +30,99 @@
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
 
-#include <errno.h>
+#include <stddef.h>
+#include <sys/stat.h>
 
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "sys/alt_dev.h"
+#include "sys/alt_warning.h"
+#include "sys/alt_errno.h"
+#include "priv/alt_file.h"
+#include "os/alt_syscall.h"
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
+ * The fstat() system call is used to obtain information about the capabilities
+ * of an open file descriptor. By default file descriptors are marked as 
+ * being character devices. If a device or file system wishes to advertise 
+ * alternative capabilities then they can register an fstat() function within
+ * their associated alt_dev structure. This will be called to fill in the
+ * entries in the imput "st" structure.
  *
- * The remaining input arguments are:
+ * This function is provided for compatability with newlib. 
  *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
- *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
+ * ALT_FSTAT is mapped onto the fstat() system call in alt_syscall.h
+ */
 
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
+#ifdef ALT_USE_DIRECT_DRIVERS
+
+#include "system.h"
+
+/*
+ * Provide minimal version that just describes all file descriptors 
+ * as character devices for provided stdio devices.
+ */
+int ALT_FSTAT (int file, struct stat *st)
 {
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
- 
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
-
-      return 0;
+    switch (file) {
+#ifdef ALT_STDIN_PRESENT
+    case 0: /* stdin file descriptor */
+#endif /* ALT_STDIN_PRESENT */
+#ifdef ALT_STDOUT_PRESENT
+    case 1: /* stdout file descriptor */
+#endif /* ALT_STDOUT_PRESENT */
+#ifdef ALT_STDERR_PRESENT
+    case 2: /* stderr file descriptor */
+#endif /* ALT_STDERR_PRESENT */
+        st->st_mode = _IFCHR;
+        return 0;
+    default:
+        return -1;
     }
+
+#if !defined(ALT_STDIN_PRESENT) && !defined(ALT_STDOUT_PRESENT) && !defined(ALT_STDERR_PRESENT)
+    /* Generate a link time warning, should this function ever be called. */
+    ALT_STUB_WARNING(fstat);
+#endif
+}
+
+#else /* !ALT_USE_DIRECT_DRIVERS */
+
+int ALT_FSTAT (int file, struct stat *st)
+{
+  alt_fd*  fd;
+
+  /*
+   * A common error case is that when the file descriptor was created, the call
+   * to open() failed resulting in a negative file descriptor. This is trapped
+   * below so that we don't try and process an invalid file descriptor.
+   */
+
+  fd = (file < 0) ? NULL : &alt_fd_list[file];
+  
+  if (fd)
+  {
+    /* Call the drivers fstat() function to fill out the "st" structure. */
+
+    if (fd->dev->fstat)
+    {
+      return fd->dev->fstat(fd, st);
+    }
+
+    /* 
+     * If no function is provided, mark the fd as belonging to a character 
+     * device.
+     */
+ 
     else
     {
-      return -EINVAL;
+      st->st_mode = _IFCHR;
+      return 0;
     }
   }
   else
   {
-    return -ENOTSUP;
+    ALT_ERRNO = EBADFD;
+    return -1;
   }
 }
+
+#endif /* ALT_USE_DIRECT_DRIVERS */

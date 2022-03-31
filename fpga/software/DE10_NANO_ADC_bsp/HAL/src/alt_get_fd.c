@@ -30,83 +30,76 @@
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
 
+#include <stddef.h>
+#include <stdio.h>
 #include <errno.h>
 
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "sys/alt_dev.h"
+#include "priv/alt_file.h"
+
+#include "alt_types.h"
+
+#include "system.h"
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
+ * alt_get_fd() is called to allocate a new file descriptor from the file
+ * descriptor pool. If a file descriptor is succesfully allocated, it is 
+ * configured to refer to device "dev".
  *
- * The remaining input arguments are:
- *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
- *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
+ * The return value is the index of the file descriptor structure (i.e. 
+ * the offset of the file descriptor within the file descriptor array). A
+ * negative value indicates failure.
+ */
 
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
+int alt_get_fd (alt_dev* dev)
 {
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
+  alt_32 i;
+  int rc = -EMFILE;
   
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
- 
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
+  /* 
+   * Take the alt_fd_list_lock semaphore in order to avoid races when 
+   * accessing the file descriptor pool.
+   */
+  
+  ALT_SEM_PEND(alt_fd_list_lock, 0);
+  
+  /* 
+   * Search through the list of file descriptors, and allocate the first
+   * free descriptor that's found. 
+   *
+   * If a free descriptor is found, then the value of "alt_max_fd" is 
+   * updated accordingly. "alt_max_fd" is a 'highwater mark' which 
+   * indicates the highest file descriptor ever allocated. This is used to
+   * improve efficency when searching the file descriptor list, and 
+   * therefore reduce contention on the alt_fd_list_lock semaphore. 
+   */
 
-      return 0;
-    }
-    else
-    {
-      return -EINVAL;
-    }
-  }
-  else
+  for (i = 0; i < ALT_MAX_FD; i++)
   {
-    return -ENOTSUP;
+    if (!alt_fd_list[i].dev)
+    {
+      alt_fd_list[i].dev = dev;
+      if (i > alt_max_fd)
+      {
+        alt_max_fd = i;
+      }
+      rc = i;
+      goto alt_get_fd_exit;
+    }
   }
+
+ alt_get_fd_exit:
+
+  /*
+   * Release the alt_fd_list_lock semaphore now that we are done with the
+   * file descriptor pool.
+   */
+
+  ALT_SEM_POST(alt_fd_list_lock);
+
+  return rc;
 }
+
+
+
+

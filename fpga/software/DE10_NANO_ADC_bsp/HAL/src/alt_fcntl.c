@@ -30,83 +30,72 @@
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
 
-#include <errno.h>
+#include <unistd.h>
+#include <fcntl.h>
 
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include <stdio.h>
+#include <stdarg.h>
+
+#include "sys/alt_errno.h"
+#include "priv/alt_file.h"
+#include "alt_types.h"
+#include "os/alt_syscall.h"
+
+#define ALT_FCNTL_FLAGS_MASK ((alt_u32) (O_APPEND | O_NONBLOCK))
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
+ * fcntl() is a limited implementation of the standard fcntl() system call.
+ * It can be used to change the state of the flags associated with an open
+ * file descriptor. Normally these flags are set during the call to
+ * open(). It is anticipated that the main use of this function will be to
+ * change the state of a device from blocking to non-blocking (where this is
+ * supported). 
  *
- * The remaining input arguments are:
+ * The input argument "fd" is the file descriptor to be manipulated. "cmd"
+ * is the command to execute. This can be either F_GETFL (return the 
+ * current value of the flags) or F_SETFL (set the value of the flags).
  *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
+ * If "cmd" is F_SETFL then the argument "arg" is the new value of flags,
+ * otherwise "arg" is ignored. Only the flags: O_APPEND and O_NONBLOCK
+ * can be updated by a call to fcntl(). All other flags remain
+ * unchanged.
  *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
-
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
-{
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
+ * ALT_FCNTL is mapped onto the fcntl() system call in alt_syscall.h
+ */
  
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
+int ALT_FCNTL (int file, int cmd, ...)
+{ 
+  alt_fd*  fd;
+  long     flags;
+  va_list  argp;
 
-      return 0;
-    }
-    else
-    {
-      return -EINVAL;
-    }
-  }
-  else
+  /*
+   * A common error case is that when the file descriptor was created, the call
+   * to open() failed resulting in a negative file descriptor. This is trapped
+   * below so that we don't try and process an invalid file descriptor.
+   */
+
+  fd = (file < 0) ? NULL : &alt_fd_list[file];
+  
+  if (fd)
   {
-    return -ENOTSUP;
+    switch (cmd)
+    {
+    case F_GETFL:
+      return fd->fd_flags & ~((alt_u32) ALT_FD_FLAGS_MASK);
+    case F_SETFL:
+      va_start(argp, cmd);
+      flags = va_arg(argp, long);
+      fd->fd_flags &= ~ALT_FCNTL_FLAGS_MASK;
+      fd->fd_flags |= (flags & ALT_FCNTL_FLAGS_MASK);
+      va_end(argp);
+      return 0;
+    default:
+      ALT_ERRNO = EINVAL;
+      return -1;
+    }
   }
+
+  ALT_ERRNO = EBADFD;
+  return -1;
 }

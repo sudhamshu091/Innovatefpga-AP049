@@ -2,7 +2,7 @@
 *                                                                             *
 * License Agreement                                                           *
 *                                                                             *
-* Copyright (c) 2004 Altera Corporation, San Jose, California, USA.           *
+* Copyright (c) 2006 Altera Corporation, San Jose, California, USA.           *
 * All rights reserved.                                                        *
 *                                                                             *
 * Permission is hereby granted, free of charge, to any person obtaining a     *
@@ -30,83 +30,96 @@
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
 
-#include <errno.h>
+#include <unistd.h>
+#include <fcntl.h>
 
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "sys/alt_errno.h"
+#include "sys/alt_warning.h"
+#include "priv/alt_file.h"
+#include "os/alt_syscall.h"
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
+ * The read() system call is used to read a block of data from a file or device.
+ * This function simply vectors the request to the device driver associated
+ * with the input file descriptor "file". 
  *
- * The remaining input arguments are:
- *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
- *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
+ * ALT_READ is mapped onto the read() system call in alt_syscall.h
+ */
 
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
+#ifdef ALT_USE_DIRECT_DRIVERS
+
+#include "system.h"
+#include "sys/alt_driver.h"
+
+/*
+ * Provide minimal version that just reads from the stdin device when provided.
+ */
+
+int ALT_READ (int file, void *ptr, size_t len)
 {
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
+#ifdef ALT_STDIN_PRESENT
+    ALT_DRIVER_READ_EXTERNS(ALT_STDIN_DEV);
+#endif
+
+#if !defined(ALT_STDIN_PRESENT)
+    /* Generate a link time warning, should this function ever be called. */
+    ALT_STUB_WARNING(read);
+#endif
+
+    switch (file) {
+#ifdef ALT_STDIN_PRESENT
+    case 0: /* stdin file descriptor */
+        return ALT_DRIVER_READ(ALT_STDIN_DEV, ptr, len, 0);
+#endif /* ALT_STDIN_PRESENT */
+    default:
+        ALT_ERRNO = EBADFD;
+        return -1;
+    }
+}
+
+#else /* !ALT_USE_DIRECT_DRIVERS */
+
+int ALT_READ (int file, void *ptr, size_t len)
+{
+  alt_fd*  fd;
+  int      rval;
+
+  /*
+   * A common error case is that when the file descriptor was created, the call
+   * to open() failed resulting in a negative file descriptor. This is trapped
+   * below so that we don't try and process an invalid file descriptor.
+   */
+
+  fd = (file < 0) ? NULL : &alt_fd_list[file];
   
-  if (alt_ticks_per_second ())
+  if (fd)
   {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
- 
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
+    /*
+     * If the file has not been opened with read access, or if the driver does
+     * not provide an implementation of read(), generate an error. Otherwise
+     * call the drivers read() function to process the request.
+     */
+
+    if (((fd->fd_flags & O_ACCMODE) != O_WRONLY) && 
+        (fd->dev->read))
       {
-        alarm->rollover = 1;
+        if ((rval = fd->dev->read(fd, ptr, len)) < 0)
+        {
+          ALT_ERRNO = -rval;
+          return -1;
+        }
+        return rval;
       }
       else
       {
-        alarm->rollover = 0;
+        ALT_ERRNO = EACCES;
       }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
-
-      return 0;
     }
-    else
-    {
-      return -EINVAL;
-    }
-  }
   else
   {
-    return -ENOTSUP;
+    ALT_ERRNO = EBADFD;
   }
+  return -1;
 }
+
+#endif /* ALT_USE_DIRECT_DRIVERS */

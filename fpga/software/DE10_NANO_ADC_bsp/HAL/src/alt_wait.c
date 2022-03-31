@@ -30,83 +30,23 @@
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
 
-#include <errno.h>
-
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "sys/alt_errno.h"
+#include "os/alt_syscall.h"
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
+ * wait() is used by newlib to wait for all child processes to exit. Since the
+ * HAL does not support spawning child processes, this returns immediately as
+ * there can't be anythign to wait for.
  *
- * The remaining input arguments are:
- *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
- *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
-
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
-{
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
+ * ALT_WAIT is mapped onto the wait() system call in alt_syscall.h
+ */
  
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
+int ALT_WAIT (int *status)
+{
+  *status = 0;
 
-      return 0;
-    }
-    else
-    {
-      return -EINVAL;
-    }
-  }
-  else
-  {
-    return -ENOTSUP;
-  }
+  ALT_ERRNO = ECHILD;
+
+  return -1;
 }
+

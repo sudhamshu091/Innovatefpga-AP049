@@ -30,83 +30,96 @@
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
 
+#include <sys/time.h>
+#include <sys/times.h>
 #include <errno.h>
 
 #include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "alt_types.h"
+#include "os/alt_syscall.h"
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
- *
- * The remaining input arguments are:
- *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
- *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
+ * Macro defining the number of micoseconds in a second.
+ */
 
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
-{
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
+#define ALT_US (1000000)
+
+/*
+ * "alt_timezone" and "alt_resettime" are the values of the the reset time and
+ * time zone set through the last call to settimeofday(). By default they are
+ * zero initialised.
+ */
+
+struct timezone alt_timezone = {0, 0};
+struct timeval  alt_resettime = {0, 0};
+
+/*
+ * gettimeofday() can be called to obtain a time structure which indicates the
+ * current "wall clock" time. This is calculated using the elapsed number of
+ * system clock ticks, and the value of "alt_resettime" and "alt_timezone" set
+ * through the last call to settimeofday().  
+ *
+ * Warning: if this function is called concurrently with a call to 
+ * settimeofday(), the value returned by gettimeofday() will be unreliable. 
+ *
+ * ALT_GETTIMEOFDAY is mapped onto the gettimeofday() system call in 
+ * alt_syscall.h
+ */
  
-      irq_context = alt_irq_disable_all ();
+
+#if defined (__GNUC__) && (__GNUC__ >= 4)
+int ALT_GETTIMEOFDAY (struct timeval  *ptimeval, void *ptimezone_vptr)
+{
+  struct timezone *ptimezone = (struct timezone*)ptimezone_vptr;
+#else
+int ALT_GETTIMEOFDAY (struct timeval  *ptimeval, struct timezone *ptimezone)
+{
+#endif
+  
+  alt_u32 nticks = alt_nticks (); 
+  alt_u32 tick_rate = alt_ticks_per_second ();
+
+  /* 
+   * Check to see if the system clock is running. This is indicated by a 
+   * non-zero system clock rate. If the system clock is not running, an error
+   * is generated and the contents of "ptimeval" and "ptimezone" are not
+   * updated.
+   */
+
+  if (tick_rate)
+  {
+    ptimeval->tv_sec  = alt_resettime.tv_sec  + nticks/tick_rate;
+    ptimeval->tv_usec = alt_resettime.tv_usec +
+     (alt_u32)(((alt_u64)nticks*(ALT_US/tick_rate))%ALT_US);
       
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
+    while(ptimeval->tv_usec < 0) {
+      if (ptimeval->tv_sec <= 0)
       {
-        alarm->rollover = 1;
+          ptimeval->tv_sec = 0;
+          ptimeval->tv_usec = 0;
+          break;
       }
       else
       {
-        alarm->rollover = 0;
+          ptimeval->tv_sec--;
+          ptimeval->tv_usec += ALT_US;
       }
+    }
     
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
+    while(ptimeval->tv_usec >= ALT_US) {
+      ptimeval->tv_sec++;
+      ptimeval->tv_usec -= ALT_US;
+    }
+      
+    if (ptimezone)
+    { 
+      ptimezone->tz_minuteswest = alt_timezone.tz_minuteswest;
+      ptimezone->tz_dsttime     = alt_timezone.tz_dsttime;
+    }
 
-      return 0;
-    }
-    else
-    {
-      return -EINVAL;
-    }
+    return 0;
   }
-  else
-  {
-    return -ENOTSUP;
-  }
+
+  return -ENOTSUP;
 }
+

@@ -2,7 +2,7 @@
 *                                                                             *
 * License Agreement                                                           *
 *                                                                             *
-* Copyright (c) 2004 Altera Corporation, San Jose, California, USA.           *
+* Copyright (c) 2009      Altera Corporation, San Jose, California, USA.      *
 * All rights reserved.                                                        *
 *                                                                             *
 * Permission is hereby granted, free of charge, to any person obtaining a     *
@@ -29,84 +29,74 @@
 * Altera does not recommend, suggest or require that this reference design    *
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
-
 #include <errno.h>
-
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "system.h"
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
- *
- * The remaining input arguments are:
- *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
- *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
+ * This interrupt registry mechanism works with the Nios II internal interrupt 
+ * controller (IIC) only. Systems with an external interrupt controller (EIC),
+ * or those with the IIC who are using the enhanced interrupt API will
+ * utilize the alt_ic_isr_register() routine to register an interrupt. 
+ */
+#ifndef NIOS2_EIC_PRESENT
 
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
-{
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
+#include "sys/alt_irq.h"
+#include "priv/alt_legacy_irq.h"
+#include "os/alt_hooks.h"
+
+#include "alt_types.h"
+
+/*
+ * The header, alt_irq_entry.h, contains the exception entry point, and is
+ * provided by the processor component. It is included here, so that the code
+ * will be added to the executable only if alt_irq_register() is present, i.e.
+ * if no interrupts are registered - there's no need to provide any 
+ * interrupt handling.
+ */
+
+#include "sys/alt_irq_entry.h"
+
+/*
+ * The header, alt_irq_table.h contains a table describing which function
+ * handles each interrupt.
+ */
+
+#include "priv/alt_irq_table.h"
+
+/*
+ * alt_irq_handler() is called to register an interrupt handler. If the 
+ * function is succesful, then the requested interrupt will be enabled upon 
+ * return. Registering a NULL handler will disable the interrupt.
+ *
+ * The return value is 0 if the interrupt handler was registered and the 
+ * interrupt was enabled, otherwise it is negative.
+ */
  
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
+int alt_irq_register (alt_u32 id, 
+                      void* context, 
+                      alt_isr_func handler)
+{
+  int rc = -EINVAL;  
+  alt_irq_context status;
 
-      return 0;
-    }
-    else
-    {
-      return -EINVAL;
-    }
-  }
-  else
+  if (id < ALT_NIRQ)
   {
-    return -ENOTSUP;
+    /* 
+     * interrupts are disabled while the handler tables are updated to ensure
+     * that an interrupt doesn't occur while the tables are in an inconsistant
+     * state.
+     */
+
+    status = alt_irq_disable_all ();
+
+    alt_irq[id].handler = handler;
+    alt_irq[id].context = context;
+
+    rc = (handler) ? alt_irq_enable (id): alt_irq_disable (id);
+
+    alt_irq_enable_all(status);
   }
+  return rc; 
 }
+#endif /* NIOS2_EIC_PRESENT */
+

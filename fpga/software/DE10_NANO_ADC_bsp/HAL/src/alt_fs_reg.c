@@ -32,81 +32,44 @@
 
 #include <errno.h>
 
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "sys/alt_dev.h"
+#include "priv/alt_file.h"
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
+ * The alt_fs_reg() function is used to register a file system. Once registered 
+ * a device can be accessed using the standard posix calls: open(), read(), 
+ * write() etc.
  *
- * The remaining input arguments are:
+ * System behaviour is undefined in the event that a file system is registered 
+ * with a name that conflicts with an existing device or file system.
  *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
+ * alt_fs_reg() is not thread safe in the sense that there should be no other 
+ * thread using the file system list at the time that alt_dev_reg() is called. In
+ * practice this means that alt_fs_reg() should only be called while operating
+ * in a single threaded mode. The expectation is that it will only be called
+ * by the file system initilisation functions invoked by alt_sys_init(), which in 
+ * turn should only be called by the single threaded C startup code.   
  *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
-
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
-{
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
+ * A return value of zero indicates success. A negative return value indicates
+ * failure. 
+ */
  
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
+int alt_fs_reg (alt_dev* dev)
+{
+  /*
+   * check that the device has a name.
+   */
 
-      return 0;
-    }
-    else
-    {
-      return -EINVAL;
-    }
-  }
-  else
+  if (!dev->name)
   {
-    return -ENOTSUP;
+    return -ENODEV;
   }
-}
+  
+  /*
+   * register the file system.
+   */
+
+  alt_llist_insert(&alt_fs_list, &dev->llist);
+
+  return 0;
+} 

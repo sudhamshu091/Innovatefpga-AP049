@@ -2,7 +2,7 @@
 *                                                                             *
 * License Agreement                                                           *
 *                                                                             *
-* Copyright (c) 2004 Altera Corporation, San Jose, California, USA.           *
+* Copyright (c) 2008 Altera Corporation, San Jose, California, USA.           *
 * All rights reserved.                                                        *
 *                                                                             *
 * Permission is hereby granted, free of charge, to any person obtaining a     *
@@ -29,84 +29,54 @@
 * Altera does not recommend, suggest or require that this reference design    *
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
-
-#include <errno.h>
-
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "sys/alt_exceptions.h"
+#include "alt_types.h"
+#include "system.h"
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
+ * This file implements support for calling user-registered handlers for
+ * instruction-generated exceptions.
  *
- * The remaining input arguments are:
- *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
- *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
+ * The registry API is optionally enabled through the "Enable
+ * Instruction-related Exception API" HAL BSP setting, which will
+ * define the macro below.
+ */
+#ifdef ALT_INCLUDE_INSTRUCTION_RELATED_EXCEPTION_API
+
+/*
+ * The header, alt_exception_handler_registry.h contains a struct describing
+ * the registered exception handler
+ */
+#include "priv/alt_exception_handler_registry.h"
+
+/*
+ * Pull in the exception entry assembly code. This will not be linked in 
+ * unless this object is linked into the executable (i.e. only if 
+ * alt_instruction_exception_register() is called).
+ */
+__asm__( "\n\t.globl alt_exception" );
+
+/*
+ * alt_instruction_exception_register() is called to register a handler to
+ * service instruction-generated exceptions that are not handled by the
+ * default exception handler code (interrupts, and optionally unimplemented
+ * instructions and traps). 
  * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
-
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
+ * Passing null (0x0) in the handler argument will disable a previously-
+ * registered handler.
+ *
+ * Note that if no handler is registered, exceptions that are not processed
+ * using the built-in handler (interrupts, and optionally unimplemented
+ * instructions and traps) are treated as unknown exceptions, resulting
+ * in either a break or an infinite loop.
+ */
+void alt_instruction_exception_register (
+  alt_exception_result (*exception_handler)(
+    alt_exception_cause cause,
+    alt_u32 exception_pc,
+    alt_u32 bad_addr) )
 {
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
- 
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
-
-      return 0;
-    }
-    else
-    {
-      return -EINVAL;
-    }
-  }
-  else
-  {
-    return -ENOTSUP;
-  }
+  alt_instruction_exception_handler = exception_handler;
 }
+
+#endif /* ALT_INCLUDE_INSTRUCTION_RELATED_EXCEPTION_API */

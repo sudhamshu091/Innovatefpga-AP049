@@ -2,7 +2,7 @@
 *                                                                             *
 * License Agreement                                                           *
 *                                                                             *
-* Copyright (c) 2004 Altera Corporation, San Jose, California, USA.           *
+* Copyright (c) 2004-2005 Altera Corporation, San Jose, California, USA.      *
 * All rights reserved.                                                        *
 *                                                                             *
 * Permission is hereby granted, free of charge, to any person obtaining a     *
@@ -30,83 +30,88 @@
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
 
-#include <errno.h>
+#include <unistd.h>
 
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "sys/alt_errno.h"
+#include "sys/alt_warning.h"
+#include "priv/alt_file.h"
+#include "os/alt_syscall.h"
+
+#ifdef ALT_USE_DIRECT_DRIVERS
+
+off_t ALT_LSEEK (int file, off_t ptr, int dir)
+{
+  /* Generate a link time warning, should this function ever be called. */
+  
+  ALT_STUB_WARNING(lseek);
+  
+  /* Indicate an error */
+  
+  ALT_ERRNO = ENOSYS;
+  return -1;
+}
+
+#else /* !ALT_USE_DIRECT_DRIVERS */
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
+ * lseek() can be called to move the read/write pointer associated with the 
+ * file descriptor "file". This function simply vectors the call to the lseek()
+ * function provided by the driver associated with the file descriptor.
  *
- * The remaining input arguments are:
+ * If the driver does not provide an implementation of lseek() an error is
+ * indicated.
  *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
+ * lseek() corresponds to the standard lseek() function.
  *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
+ * ALT_LSEEK is mapped onto the lseek() system call in alt_syscall.h
+ *
+ */
 
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
+off_t ALT_LSEEK (int file, off_t ptr, int dir)
 {
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
- 
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
+  alt_fd* fd;
+  off_t   rc = 0; 
 
-      return 0;
+  /*
+   * A common error case is that when the file descriptor was created, the call
+   * to open() failed resulting in a negative file descriptor. This is trapped
+   * below so that we don't try and process an invalid file descriptor.
+   */
+
+  fd = (file < 0) ? NULL : &alt_fd_list[file];
+  
+  if (fd) 
+  {
+    /*
+     * If the device driver provides an implementation of the lseek() function,
+     * then call that to process the request.
+     */
+ 
+    if (fd->dev->lseek)
+    {
+      rc = fd->dev->lseek(fd, ptr, dir);
     }
+    /*
+     * Otherwise return an error.
+     */
+
     else
     {
-      return -EINVAL;
+      rc = -ENOTSUP;
     }
   }
-  else
+  else  
   {
-    return -ENOTSUP;
+    rc = -EBADFD;
   }
+
+  if (rc < 0)
+  {
+    ALT_ERRNO = -rc;
+    rc = -1;
+  }
+
+  return rc;
 }
+
+#endif /* ALT_USE_DIRECT_DRIVERS */

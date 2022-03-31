@@ -2,7 +2,7 @@
 *                                                                             *
 * License Agreement                                                           *
 *                                                                             *
-* Copyright (c) 2004 Altera Corporation, San Jose, California, USA.           *
+* Copyright (c) 2006 Altera Corporation, San Jose, California, USA.           *
 * All rights reserved.                                                        *
 *                                                                             *
 * Permission is hereby granted, free of charge, to any person obtaining a     *
@@ -30,83 +30,96 @@
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
 
-#include <errno.h>
+#include <stddef.h>
+#include <sys/stat.h>
 
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "sys/alt_dev.h"
+#include "sys/alt_errno.h"
+#include "sys/alt_warning.h"
+#include "priv/alt_file.h"
+#include "os/alt_syscall.h"
+
+#ifdef ALT_USE_DIRECT_DRIVERS
+
+#include "system.h"
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
- *
- * The remaining input arguments are:
- *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
- *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
-
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
+ * Provide minimal version that just describes all file descriptors 
+ * as tty devices for provided stdio devices.
+ */
+int ALT_ISATTY (int file)
 {
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
- 
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
-
-      return 0;
+    switch (file) {
+#ifdef ALT_STDIN_PRESENT
+    case 0: /* stdin file descriptor */
+#endif /* ALT_STDIN_PRESENT */
+#ifdef ALT_STDOUT_PRESENT
+    case 1: /* stdout file descriptor */
+#endif /* ALT_STDOUT_PRESENT */
+#ifdef ALT_STDERR_PRESENT
+    case 2: /* stderr file descriptor */
+#endif /* ALT_STDERR_PRESENT */
+        return 1;
+    default:
+        return 0;
     }
+
+#if !defined(ALT_STDIN_PRESENT) && !defined(ALT_STDOUT_PRESENT) && !defined(ALT_STDERR_PRESENT)
+    /* Generate a link time warning, should this function ever be called. */
+    ALT_STUB_WARNING(isatty);
+#endif
+}
+
+#else /* !ALT_USE_DIRECT_DRIVERS */
+/*
+ * isatty() can be used to determine whether the input file descriptor "file" 
+ * refers to a terminal device or not. If it is a terminal device then the
+ * return value is one, otherwise it is zero.  
+ *
+ * ALT_ISATTY is mapped onto the isatty() system call in alt_syscall.h
+ */
+ 
+int ALT_ISATTY (int file)
+{
+  alt_fd*     fd;
+  struct stat stat;
+
+  /*
+   * A common error case is that when the file descriptor was created, the call
+   * to open() failed resulting in a negative file descriptor. This is trapped
+   * below so that we don't try and process an invalid file descriptor.
+   */
+
+  fd = (file < 0) ? NULL : &alt_fd_list[file];
+  
+  if (fd)
+  {
+    /*
+     * If a device driver does not provide an fstat() function, then it is 
+     * treated as a terminal device by default.
+     */
+
+    if (!fd->dev->fstat)
+    {
+      return 1;
+    }
+
+    /*
+     * If a driver does provide an implementation of the fstat() function, then
+     * this is called so that the device can identify itself.
+     */ 
+
     else
     {
-      return -EINVAL;
+      fstat (file, &stat);
+      return (stat.st_mode == _IFCHR) ? 1 : 0;
     }
   }
   else
   {
-    return -ENOTSUP;
+    ALT_ERRNO = EBADFD;
+    return 0;
   }
 }
+
+#endif /* ALT_USE_DIRECT_DRIVERS */

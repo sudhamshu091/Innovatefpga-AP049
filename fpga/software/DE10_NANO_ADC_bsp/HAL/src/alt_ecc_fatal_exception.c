@@ -2,7 +2,7 @@
 *                                                                             *
 * License Agreement                                                           *
 *                                                                             *
-* Copyright (c) 2004 Altera Corporation, San Jose, California, USA.           *
+* Copyright (c) 2013 Altera Corporation, San Jose, California, USA.           *
 * All rights reserved.                                                        *
 *                                                                             *
 * Permission is hereby granted, free of charge, to any person obtaining a     *
@@ -29,84 +29,47 @@
 * Altera does not recommend, suggest or require that this reference design    *
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
-
-#include <errno.h>
-
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "io.h"
+#include "sys/alt_exceptions.h"
+#include "sys/alt_cache.h"
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
- *
- * The remaining input arguments are:
- *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
- *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
+ * This file implements support for calling a user-registered handler
+ * when a likely fatal ECC error exception occurs.
+ */
+
+/* 
+ * Global variable containing address to jump to when likely fatal
+ * ECC error exception occurs.
+ */
+alt_u32 alt_exception_ecc_fatal_handler = 0x0;
+
+/*
+ * Pull in the exception entry assembly code. This will not be linked in 
+ * unless this object is linked into the executable (i.e. only if 
+ * alt_ecc_fatal_exception_register() is called).
+ */
+__asm__( "\n\t.globl alt_exception" );
+
+/*
+ * alt_ecc_fatal_exception_register() is called to register a handler to
+ * service likely fatal ECC error exceptions. 
  * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
-
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
+ * Passing null (0x0) in the handler argument will disable a previously-
+ * registered handler.
+ *
+ * Note that if no handler is registered, just normal exception processing
+ * occurs on a likely fatal ECC exception and the exception processing
+ * code might trigger an infinite exception loop.
+ */
+void 
+alt_ecc_fatal_exception_register(alt_u32 handler)
 {
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
- 
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
+    alt_exception_ecc_fatal_handler = handler;
 
-      return 0;
-    }
-    else
-    {
-      return -EINVAL;
-    }
-  }
-  else
-  {
-    return -ENOTSUP;
-  }
+    /* 
+     * Flush this from the cache. Required because the exception handler uses ldwio
+     * to read this value to avoid trigger another data cache ECC error exception.
+     */
+    alt_dcache_flush(&alt_exception_ecc_fatal_handler, sizeof(alt_exception_ecc_fatal_handler));
 }

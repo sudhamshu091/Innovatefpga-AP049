@@ -2,7 +2,7 @@
 *                                                                             *
 * License Agreement                                                           *
 *                                                                             *
-* Copyright (c) 2004 Altera Corporation, San Jose, California, USA.           *
+* Copyright (c) 2004-2005 Altera Corporation, San Jose, California, USA.      *
 * All rights reserved.                                                        *
 *                                                                             *
 * Permission is hereby granted, free of charge, to any person obtaining a     *
@@ -30,83 +30,70 @@
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
 
-#include <errno.h>
-
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "sys/alt_load.h"
+#include "sys/alt_cache.h"
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
- *
- * The remaining input arguments are:
- *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
- *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
+ * Linker defined symbols.
+   These used to be
+ *    extern alt_u32 __flash_rwdata_start;
+ *    extern alt_u32 __ram_rwdata_start;
+ *    extern alt_u32 __ram_rwdata_end;
+ * but that results in a fatal error when compiling -mgpopt=global
+ * because gcc assumes they are normal C variables in .sdata
+ * and therefore addressable from gp using a 16-bit offset,
+ * when in fact they are special values defined by linker.x
+ * and located nowhere near .sdata. 
+ * Specifying __attribute__((section(".data"))) will force these
+ * in .data. (CASE:258384.)
+ */
 
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
+extern alt_u32 __flash_rwdata_start __attribute__((section(".data")));
+extern alt_u32 __ram_rwdata_start __attribute__((section(".data")));
+extern alt_u32 __ram_rwdata_end __attribute__((section(".data")));
+extern alt_u32 __flash_rodata_start __attribute__((section(".data")));
+extern alt_u32 __ram_rodata_start __attribute__((section(".data")));
+extern alt_u32 __ram_rodata_end __attribute__((section(".data")));
+extern alt_u32 __flash_exceptions_start __attribute__((section(".data")));  
+extern alt_u32 __ram_exceptions_start __attribute__((section(".data")));
+extern alt_u32 __ram_exceptions_end __attribute__((section(".data")));
+
+/*
+ * alt_load() is called when the code is executing from flash. In this case
+ * there is no bootloader, so this application is responsible for loading to
+ * RAM any sections that are required.
+ */  
+
+void alt_load (void)
 {
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
- 
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
+  /* 
+   * Copy the .rwdata section. 
+   */
 
-      return 0;
-    }
-    else
-    {
-      return -EINVAL;
-    }
-  }
-  else
-  {
-    return -ENOTSUP;
-  }
+  alt_load_section (&__flash_rwdata_start, 
+		               &__ram_rwdata_start,
+		               &__ram_rwdata_end);
+
+  /*
+   * Copy the exception handler.
+   */
+
+  alt_load_section (&__flash_exceptions_start, 
+		                &__ram_exceptions_start,
+		                &__ram_exceptions_end);
+
+  /*
+   * Copy the .rodata section.
+   */
+
+  alt_load_section (&__flash_rodata_start, 
+		                &__ram_rodata_start,
+		                &__ram_rodata_end);
+  
+  /*
+   * Now ensure that the caches are in synch.
+   */
+  
+  alt_dcache_flush_all();
+  alt_icache_flush_all();
 }

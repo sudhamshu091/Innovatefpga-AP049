@@ -30,83 +30,92 @@
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
 
-#include <errno.h>
+#include <signal.h>
+#include <unistd.h>
 
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "sys/alt_errno.h"
+#include "os/alt_syscall.h"
+
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
+ * kill() is used by newlib in order to send signals to processes. Since there
+ * is only a single process in the HAL, the only valid values for pid are 
+ * either the current process id, or the broadcast values, i.e. pid must be
+ * less than or equal to zero. 
  *
- * The remaining input arguments are:
- *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
- *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
+ * ALT_KILL is mapped onto the kill() system call in alt_syscall.h
+ */
 
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
+int ALT_KILL (int pid, int sig)
 {
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
- 
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
+  int status = 0;
 
-      return 0;
-    }
-    else
-    {
-      return -EINVAL;
-    }
-  }
-  else
+  if (pid <= 0)
   {
-    return -ENOTSUP;
+    switch (sig)
+    {
+    case 0:
+
+      /* The null signal is used to check that a pid is valid. */
+
+      break;
+
+    case SIGABRT:
+    case SIGALRM:
+    case SIGFPE:
+    case SIGILL:
+    case SIGKILL:
+    case SIGPIPE:
+    case SIGQUIT:
+    case SIGSEGV:
+    case SIGTERM:
+    case SIGUSR1:
+    case SIGUSR2:
+    case SIGBUS:
+    case SIGPOLL:
+    case SIGPROF:
+    case SIGSYS:
+    case SIGTRAP:
+    case SIGVTALRM:
+    case SIGXCPU:
+    case SIGXFSZ:
+
+      /* 
+       * The Posix standard defines the default behaviour for all these signals 
+       * as being eqivalent to a call to _exit(). No mechanism is provided to 
+       * change this behaviour.
+       */
+
+      _exit(0);
+    case SIGCHLD:
+    case SIGURG:
+
+      /* 
+       * The Posix standard defines these signals to be ignored by default. No 
+       * mechanism is provided to change this behaviour.
+       */
+
+      break;
+    default:
+
+      /* Tried to send an unsupported signal */
+
+      status = EINVAL;
+    }
   }
+
+  else if (pid > 0)
+  {
+    /* Attempted to signal a non-existant process */
+
+    status = ESRCH;
+  }
+
+  if (status)
+  {
+    ALT_ERRNO = status;
+    return -1;
+  }
+
+  return 0;
 }

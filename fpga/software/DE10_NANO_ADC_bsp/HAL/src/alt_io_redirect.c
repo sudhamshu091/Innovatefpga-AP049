@@ -30,83 +30,69 @@
 * file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
 
-#include <errno.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
 
-#include "sys/alt_alarm.h"
-#include "sys/alt_irq.h"
+#include "sys/alt_dev.h"
+#include "priv/alt_file.h"
+
 
 /*
- * alt_alarm_start is called to register an alarm with the system. The 
- * "alarm" structure passed as an input argument does not need to be 
- * initialised by the user. This is done within this function.
+ * alt_open_fd() is similar to open() in that it is used to obtain a file
+ * descriptor for the file named "name". The "flags" and "mode" arguments are
+ * identical to the "flags" and "mode" arguments of open().
  *
- * The remaining input arguments are:
+ * The distinction between the two functions is that the file descriptor 
+ * structure to use is passed in as an argument, rather than allocated from the
+ * list of free file descriptors.
  *
- * nticks - The time to elapse until the alarm executes. This is specified in
- *          system clock ticks.
- * callback - The function to run when the indicated time has elapsed.
- * context  - An opaque value, passed to the callback function. 
-*
- * Care should be taken when defining the callback function since it is 
- * likely to execute in interrupt context. In particular, this mean that 
- * library calls like printf() should not be made, since they can result in 
- * deadlock.
+ * This is used by alt_io_redirect() to redirect the stdin, stdout and stderr
+ * file descriptors to point to new devices.
  *
- * The interval to be used for the next callback is the return
- * value from the callback function. A return value of zero indicates that the
- * alarm should be unregistered. 
- * 
- * alt_alarm_start() will fail if  the timer facility has not been enabled 
- * (i.e. there is no system clock). Failure is indicated by a negative return 
- * value.
- */ 
+ * If the device can not be succesfully opened, then the input file descriptor
+ * remains unchanged.
+ */
 
-int alt_alarm_start (alt_alarm* alarm, alt_u32 nticks,
-                     alt_u32 (*callback) (void* context),
-                     void* context)
+static void alt_open_fd(alt_fd* fd, const char* name, int flags, int mode)
 {
-  alt_irq_context irq_context;
-  alt_u32 current_nticks = 0;
-  
-  if (alt_ticks_per_second ())
-  {
-    if (alarm)
-    {
-      alarm->callback = callback;
-      alarm->context  = context;
- 
-      irq_context = alt_irq_disable_all ();
-      
-      current_nticks = alt_nticks();
-      
-      alarm->time = nticks + current_nticks + 1; 
-      
-      /* 
-       * If the desired alarm time causes a roll-over, set the rollover
-       * flag. This will prevent the subsequent tick event from causing
-       * an alarm too early.
-       */
-      if(alarm->time < current_nticks)
-      {
-        alarm->rollover = 1;
-      }
-      else
-      {
-        alarm->rollover = 0;
-      }
-    
-      alt_llist_insert (&alt_alarm_list, &alarm->llist);
-      alt_irq_enable_all (irq_context);
+  int old;
 
-      return 0;
-    }
-    else
-    {
-      return -EINVAL;
-    }
-  }
-  else
+  old = open (name, flags, mode);
+
+  if (old >= 0)
   {
-    return -ENOTSUP;
+    fd->dev      = alt_fd_list[old].dev;
+    fd->priv     = alt_fd_list[old].priv;
+    fd->fd_flags = alt_fd_list[old].fd_flags;
+
+    alt_release_fd (old);
   }
-}
+} 
+
+/*
+ * alt_io_redirect() is called once the device/filesystem lists have been 
+ * initialised, but before main(). Its function is to redirect standard in,
+ * standard out and standard error so that they point to the devices selected by
+ * the user (as defined in system.h).
+ *
+ * Prior to the call to this function, io is directed towards /dev/null. If
+ * i/o can not be redirected to the requested device, for example if the device 
+ * does not exist, then it remains directed at /dev/null. 
+ */
+ 
+void alt_io_redirect(const char* stdout_dev, 
+                     const char* stdin_dev, 
+                     const char* stderr_dev)
+{
+  /* Redirect the channels */
+
+  alt_open_fd (&alt_fd_list[STDOUT_FILENO], stdout_dev, O_WRONLY, 0777);
+  alt_open_fd (&alt_fd_list[STDIN_FILENO], stdin_dev, O_RDONLY, 0777);
+  alt_open_fd (&alt_fd_list[STDERR_FILENO], stderr_dev, O_WRONLY, 0777);
+}  
+
+
+
+
