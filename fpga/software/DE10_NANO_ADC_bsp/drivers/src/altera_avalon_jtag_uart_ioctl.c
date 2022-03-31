@@ -2,7 +2,7 @@
 *                                                                             *
 * License Agreement                                                           *
 *                                                                             *
-* Copyright (c) 2007 Altera Corporation, San Jose, California, USA.           *
+* Copyright (c) 2006 Altera Corporation, San Jose, California, USA.           *
 * All rights reserved.                                                        *
 *                                                                             *
 * Permission is hereby granted, free of charge, to any person obtaining a     *
@@ -28,59 +28,59 @@
 *                                                                             *
 ******************************************************************************/
 
+#include <string.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <limits.h>
+
+#include <sys/stat.h>
+
+#include "sys/ioctl.h"
 #include "alt_types.h"
-#include "sys/alt_dev.h"
+
+#include "altera_avalon_jtag_uart_regs.h"
 #include "altera_avalon_jtag_uart.h"
 
-extern int altera_avalon_jtag_uart_read(altera_avalon_jtag_uart_state* sp,
-  char* buffer, int space, int flags);
-extern int altera_avalon_jtag_uart_write(altera_avalon_jtag_uart_state* sp,
-  const char* ptr, int count, int flags);
-extern int altera_avalon_jtag_uart_ioctl(altera_avalon_jtag_uart_state* sp,
-  int req, void* arg);
-extern int altera_avalon_jtag_uart_close(altera_avalon_jtag_uart_state* sp, 
-  int flags);
-
-/* ----------------------------------------------------------------------- */
-/* --------------------- WRAPPERS FOR ALT FD SUPPORT --------------------- */
-/*
- *
- */
-
-int 
-altera_avalon_jtag_uart_read_fd(alt_fd* fd, char* buffer, int space)
-{
-    altera_avalon_jtag_uart_dev* dev = (altera_avalon_jtag_uart_dev*) fd->dev; 
-
-    return altera_avalon_jtag_uart_read(&dev->state, buffer, space,
-      fd->fd_flags);
-}
-
-int 
-altera_avalon_jtag_uart_write_fd(alt_fd* fd, const char* buffer, int space)
-{
-    altera_avalon_jtag_uart_dev* dev = (altera_avalon_jtag_uart_dev*) fd->dev; 
-
-    return altera_avalon_jtag_uart_write(&dev->state, buffer, space,
-      fd->fd_flags);
-}
+#include "sys/alt_log_printf.h"
 
 #ifndef ALTERA_AVALON_JTAG_UART_SMALL
 
-int 
-altera_avalon_jtag_uart_close_fd(alt_fd* fd)
-{
-    altera_avalon_jtag_uart_dev* dev = (altera_avalon_jtag_uart_dev*) fd->dev; 
-
-    return altera_avalon_jtag_uart_close(&dev->state, fd->fd_flags);
-}
+/* ----------------------------------------------------------- */
+/* ------------------------- FAST DRIVER --------------------- */
+/* ----------------------------------------------------------- */
 
 int 
-altera_avalon_jtag_uart_ioctl_fd(alt_fd* fd, int req, void* arg)
+altera_avalon_jtag_uart_ioctl(altera_avalon_jtag_uart_state* sp, int req,
+  void* arg)
 {
-    altera_avalon_jtag_uart_dev* dev = (altera_avalon_jtag_uart_dev*) fd->dev;
+  int rc = -ENOTTY;
 
-    return altera_avalon_jtag_uart_ioctl(&dev->state, req, arg);
+  switch (req)
+  {
+  case TIOCSTIMEOUT:
+    /* Set the time to wait until assuming host is not connected */
+    if (sp->timeout != INT_MAX)
+    {
+      int timeout = *((int *)arg);
+      sp->timeout = (timeout >= 2 && timeout < INT_MAX) ? timeout : INT_MAX - 1;
+      rc = 0;
+    }
+    break;
+
+  case TIOCGCONNECTED:
+    /* Find out whether host is connected */
+    if (sp->timeout != INT_MAX)
+    {
+      *((int *)arg) = (sp->host_inactive < sp->timeout) ? 1 : 0;
+      rc = 0;
+    }
+    break;
+
+  default:
+    break;
+  }
+
+  return rc;
 }
 
-#endif /* ALTERA_AVALON_JTAG_UART_SMALL */
+#endif /* !ALTERA_AVALON_JTAG_UART_SMALL */

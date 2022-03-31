@@ -2,7 +2,7 @@
 *                                                                             *
 * License Agreement                                                           *
 *                                                                             *
-* Copyright (c) 2007 Altera Corporation, San Jose, California, USA.           *
+* Copyright (c) 2003 Altera Corporation, San Jose, California, USA.           *
 * All rights reserved.                                                        *
 *                                                                             *
 * Permission is hereby granted, free of charge, to any person obtaining a     *
@@ -26,61 +26,57 @@
 * This agreement shall be governed in all respects by the laws of the State   *
 * of California and by the laws of the United States of America.              *
 *                                                                             *
+* Altera does not recommend, suggest or require that this reference design    *
+* file be used in conjunction or combination with any other product.          *
 ******************************************************************************/
 
+#include "altera_avalon_sysid_qsys.h"
+#include "altera_avalon_sysid_qsys_regs.h"
 #include "alt_types.h"
-#include "sys/alt_dev.h"
-#include "altera_avalon_jtag_uart.h"
+#include <io.h>
 
-extern int altera_avalon_jtag_uart_read(altera_avalon_jtag_uart_state* sp,
-  char* buffer, int space, int flags);
-extern int altera_avalon_jtag_uart_write(altera_avalon_jtag_uart_state* sp,
-  const char* ptr, int count, int flags);
-extern int altera_avalon_jtag_uart_ioctl(altera_avalon_jtag_uart_state* sp,
-  int req, void* arg);
-extern int altera_avalon_jtag_uart_close(altera_avalon_jtag_uart_state* sp, 
-  int flags);
-
-/* ----------------------------------------------------------------------- */
-/* --------------------- WRAPPERS FOR ALT FD SUPPORT --------------------- */
 /*
- *
- */
+*  This component is special: there's only one of it.
+*  Therefore we can dispense with a bunch of complexity
+*  normally associated with components, such as specialized
+*  structs containing parameter info, and instead use that
+*  info by name directly out of system.h.  A downside of this
+*  approach is that each time the system is regenerated, and
+*  system.h changes, this file must be recompiled.  Fortunately
+*  this file is, and is likely to remain, quite small.
+*/
+#include "system.h"
 
-int 
-altera_avalon_jtag_uart_read_fd(alt_fd* fd, char* buffer, int space)
+#ifdef SYSID_BASE
+/*
+*  return values:
+*    0 if the hardware and software appear to be in sync
+*    1 if software appears to be older than hardware
+*   -1 if hardware appears to be older than software
+*/
+
+alt_32 alt_avalon_sysid_qsys_test(void)
 {
-    altera_avalon_jtag_uart_dev* dev = (altera_avalon_jtag_uart_dev*) fd->dev; 
+  /* Read the hardware-tag, aka value0, from the hardware. */
+  alt_u32 hardware_id = IORD_ALTERA_AVALON_SYSID_QSYS_ID(SYSID_BASE);
 
-    return altera_avalon_jtag_uart_read(&dev->state, buffer, space,
-      fd->fd_flags);
+  /* Read the time-of-generation, aka value1, from the hardware register. */
+  alt_u32 hardware_timestamp = IORD_ALTERA_AVALON_SYSID_QSYS_TIMESTAMP(SYSID_BASE);
+
+  /* Return 0 if the hardware and software appear to be in sync. */
+  if ((SYSID_TIMESTAMP == hardware_timestamp) && (SYSID_ID == hardware_id))
+  {
+    return 0;
+  }
+
+  /*
+  *  Return 1 if software appears to be older than hardware (that is,
+  *  the value returned by the hardware is larger than that recorded by
+  *  the generator function).
+  *  If the hardware time happens to match the generator program's value
+  *  (but the hardware tag, value0, doesn't match or 0 would have been
+  *  returned above), return an arbitrary value, let's say -1.
+  */
+  return ((alt_32)(hardware_timestamp - SYSID_TIMESTAMP)) > 0 ? 1 : -1;
 }
-
-int 
-altera_avalon_jtag_uart_write_fd(alt_fd* fd, const char* buffer, int space)
-{
-    altera_avalon_jtag_uart_dev* dev = (altera_avalon_jtag_uart_dev*) fd->dev; 
-
-    return altera_avalon_jtag_uart_write(&dev->state, buffer, space,
-      fd->fd_flags);
-}
-
-#ifndef ALTERA_AVALON_JTAG_UART_SMALL
-
-int 
-altera_avalon_jtag_uart_close_fd(alt_fd* fd)
-{
-    altera_avalon_jtag_uart_dev* dev = (altera_avalon_jtag_uart_dev*) fd->dev; 
-
-    return altera_avalon_jtag_uart_close(&dev->state, fd->fd_flags);
-}
-
-int 
-altera_avalon_jtag_uart_ioctl_fd(alt_fd* fd, int req, void* arg)
-{
-    altera_avalon_jtag_uart_dev* dev = (altera_avalon_jtag_uart_dev*) fd->dev;
-
-    return altera_avalon_jtag_uart_ioctl(&dev->state, req, arg);
-}
-
-#endif /* ALTERA_AVALON_JTAG_UART_SMALL */
+#endif
