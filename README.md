@@ -125,7 +125,7 @@ Prediction of stress in a patient using sensor data<br>
 [Confidence](confidence.png)<br>
 ![](confidence.png)<br>
 
-Stress Prediction for Test Data 
+Stress Prediction for Test Data<br>
 
 [Stress_Prediction_100_values_of_test_data](outputs/prediction_100_values.png)<br>
 ![](outputs/prediction_100_values.png)<br>
