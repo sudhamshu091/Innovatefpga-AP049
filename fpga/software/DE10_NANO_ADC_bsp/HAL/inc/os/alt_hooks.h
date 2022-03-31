@@ -1,5 +1,5 @@
-#ifndef __ALT_FLAG_H__
-#define __ALT_FLAG_H__
+#ifndef __ALT_HOOKS_H__
+#define __ALT_HOOKS_H__
 
 /******************************************************************************
 *                                                                             *
@@ -40,59 +40,22 @@
 ******************************************************************************/
 
 /*
- * This header provides macro definitions that can be used to create and use
- * uc/OS-II style event flags. These macros can be used in both a uC/OS-II based 
- * environment, and a single threaded HAL based environment.
- *
- * The motivation for these macros is to allow code to be developed which is
- * thread safe under uC/OS-II, but incurs no additional overhead when used in a
- * single threaded HAL environment.  
- *
- * In the case of a single threaded HAL environment, they compile to 
- * "do nothing" directives, which ensures they do not contribute to the final
- * executable.
- *
- * The following macros are available:
- *
- * ALT_FLAG_GRP        - Create a flag group instance.
- * ALT_EXTERN_FLAG_GRP - Create a reference to an external flag group instance.
- * ALT_STATIC_FLAG_GRP - Create a static flag group instance.
- * ALT_FLAG_CREATE     - Initialise a flag group.
- * ALT_FLAG_PEND       - Pend on a flag group.
- * ALT_FLAG_POST       - Set a flag condition.
- 
- *
- * Input arguments and return codes are all consistant with the equivalent
- * uC/OS-II function.
- *
- * It's important to be careful in the use of the macros: ALT_FLAG_GRP, 
- * ALT_EXTERN_FLAG_GRP, and ALT_STATIC_FLAG_GRP. In these three cases the 
- * semi-colon is included in the macro definition; so, for example, you should 
- * use:
- *
- * ALT_FLAG_GRP(mygroup)
- *
- * not:
- *
- * ALT_FLAG_GRP(mygroup);
- *
- * The inclusion of the semi-colon has been necessary to ensure the macros can
- * compile with no warnings when used in a single threaded HAL environment.
- *
+ * This header provides "do-nothing" macro definitions for operating system 
+ * hooks within the HAL. The O/S component can override these to provide it's 
+ * own implementation.
  */ 
 
-#include "priv/alt_no_error.h"
+#define ALT_OS_TIME_TICK() while(0)
+#define ALT_OS_INIT()      while(0)
+#define ALT_OS_STOP()      while(0)
 
-#define ALT_FLAG_GRP(group)
-#define ALT_EXTERN_FLAG_GRP(group) 
-#define ALT_STATIC_FLAG_GRP(group)
-       
-#define ALT_FLAG_CREATE(group, flags) alt_no_error ()   
-#define ALT_FLAG_PEND(group, flags, wait_type, timeout) alt_no_error ()
-#define ALT_FLAG_POST(group, flags, opt) alt_no_error ()
+/* Call from assembly code */
+#define ALT_OS_INT_ENTER_ASM
+#define ALT_OS_INT_EXIT_ASM
 
-#ifndef ALT_SINGLE_THREADED
-#define ALT_SINGLE_THREADED
-#endif
+/* Call from C code */
+#define ALT_OS_INT_ENTER() while(0)
+#define ALT_OS_INT_EXIT()  while(0)
 
-#endif /* __ALT_FLAG_H__ */
+
+#endif /* __ALT_HOOKS_H__ */
