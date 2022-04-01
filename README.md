@@ -105,6 +105,16 @@ Videos that belong to 5 catgories namely, Angry, Anxiety, Happy, Neutral, Sad ar
 [Confidence](outputs/Confidence_video.png)<br>
 ![Confidence](outputs/Confidence_video.png)
 
+[Sad](outputs/real_time_sad.jpg)<br>
+![Sad](outputs/real_time_sad.jpg)<br>
+[Happy](outputs/real_time_happy.jpg)<br>
+![Happy](outputs/real_time_happy.jpg)<br>
+[Anxiety](outputs/real_time_anxiety.jpg)<br>
+![Anxiety](outputs/real_time_anxiety.jpg)<br>
+[Angry](outputs/real_time_angry.jpg)<br>
+![Angry](outputs/real_time_angry.jpg)<br>
+
+
 <h2>3) Sensor Modelling</h2>
 
 <h3>WESAD Dataset</h3>
