@@ -133,7 +133,7 @@ Stress Prediction for Test Data<br>
 [Stress_Prediction_200_values_of_test_data](outputs/prediction_200_values.png)<br>
 ![](outputs/prediction_200_values.png)<br>
 
-<h1>Correlation, Mental Health Disorder Diagnosis and Recommendation</h1>
+<h1>Correlation, Classification, Mental Health Disorder Diagnosis and Recommendation</h1>
 
 [Temperature](outputs/temp.png)<br>
 ![](outputs/temp.png)<br>
