@@ -161,3 +161,22 @@ Stress Prediction for Test Data<br>
 ![](outputs/corr.png)<br>
 [Real time Stress Prediction](outputs/real_time_stress_prediction.png)<br>
 ![](outputs/real_time_stress_prediction.png)<br>
+
+
+Recommendations based on prediction(based on classification) of mental health disorder(for Depression and Anxiety)<br>
+
+[](outputs/recommender1.png)<br>
+![](outputs/recommender1.png)<br>
+[](outputs/recommender2.png)<br>
+![](outputs/recommender2.png)<br>
+[](outputs/recommender3.png)<br>
+![](outputs/recommender3.png)<br>
+
+User Survey(recommendations based on questions asked to user)
+
+[](outputs/user_survey1.png)<br>
+![](outputs/user_survey1.png)<br>
+[](outputs/user_survey2.png)<br>
+![](outputs/user_survey2.png)<br>
+[](outputs/user_survey3.png)<br>
+![](outputs/user_survey3.png)<br>
