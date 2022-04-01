@@ -44,8 +44,8 @@ Qsys project for integrating sensors namely Temperature, EDA, Light, Gas Sensor.
 
 >>ADC top module, sopcinfo, sof, qsf and other files<br>
 
-[Wearable Device](outputs/model.mp4)
-![Wearable Device](outputs/model.mp4)
+![Wearable Device](outputs/model1.jpeg)
+![Wearable Device](outputs/model2.jpeg)
 
 The values from the sensors are test inputs for the sensor modelling.
 <h3>Plot Sensor Values</h3>
