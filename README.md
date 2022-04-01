@@ -6,7 +6,7 @@
 
 <h1>Hardware Part</h1>
 <h2>1) Sensor Integration</h2>
-<h4>Qsys project for integrating sensors namely Temperature, EDA, Light, Gas Sensor. On board accelerometer integration.</h4>
+<h4>Integration of sensors using DE10 Nano. Temperature, EDA, Ambient ligh., Gas Sensor. On board accelerometer integration.</h4>
 
 ![Wearable Device](outputs/model1_LI.jpg)
 ![Wearable Device](outputs/model2_LI.jpg)
