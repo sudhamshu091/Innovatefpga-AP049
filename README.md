@@ -100,7 +100,8 @@ Videos that belong to 5 catgories namely, Angry, Anxiety, Happy, Neutral, Sad ar
 [Confidence](outputs/Confidence_video.png)<br>
 ![Confidence](outputs/Confidence_video.png)
 
-Some Sample Realtime Outputs
+Some Sample Realtime Outputs<br>
+
 [Sad](outputs/real_time_sad.jpg)<br>
 ![Sad](outputs/real_time_sad.jpg)<br>
 [Happy](outputs/real_time_happy.jpg)<br>
