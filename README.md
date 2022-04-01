@@ -89,16 +89,19 @@ Videos that belong to 5 catgories namely, Angry, Anxiety, Happy, Neutral, Sad ar
 >>>neutral<br>
 >>>sad<br>
 
-<h3>Preprocessing</h3>
+<h3>Model</h3>
 
 - Sample the videos that belong to 5 classes (angry, anxiety, happy, neutral, sad) are converted to gray scale images of 48X48X1 size.
 - Split data into train and test images.
 - Run machine learning model.
 
-<h3>Real Time Emotion Recognition</h3>
 
 [Confidence](outputs/Confidence_video.png)<br>
 ![Confidence](outputs/Confidence_video.png)
+
+<h3>Real Time Emotion Recognition</h3>
+
+- With real time video upto 85% confidence
 
 Some Sample Realtime Outputs<br>
 
