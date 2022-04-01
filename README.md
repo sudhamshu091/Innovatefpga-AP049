@@ -163,7 +163,7 @@ Stress Prediction for Test Data<br>
 ![](outputs/real_time_stress_prediction.png)<br>
 
 
-Recommendations based on prediction(based on classification) of mental health disorder(for Depression and Anxiety)<br>
+Recommendations based on prediction(based on classification, correlation of video emotion recognition and sensor model predictions) of mental health disorder(for Depression and Anxiety)<br>
 
 [](outputs/recommender1.png)<br>
 ![](outputs/recommender1.png)<br>
