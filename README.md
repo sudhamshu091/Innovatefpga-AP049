@@ -51,7 +51,10 @@
 
 >>ADC top module, sopcinfo, sof, qsf and other files<br>
 
-![Sensor Integration](outputs/adc.jpg)
+![Sensor Integration](outputs/adc.jpg)<br>
+
+[Logic Utilization](outputs/logic_utilization.png)<br>
+![Logic Utilization](outputs/logic_utilization.png)<br>
 
 <h4>The values from the sensors are test inputs for the sensor modelling.</h4>
 <h3>Plot Sensor Values</h3>
