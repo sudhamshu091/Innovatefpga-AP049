@@ -8,8 +8,8 @@
 <h2>1) Sensor Integration</h2>
 Qsys project for integrating sensors namely Temperature, EDA, Light, Gas Sensor. On board accelerometer integration.
 
-![Wearable Device](outputs/model1_LI.jpeg)
-![Wearable Device](outputs/model2_LI.jpeg)
+![Wearable Device](outputs/model1_LI.jpg)
+![Wearable Device](outputs/model2_LI.jpg)
 
 <h3>Tree</h3>
 
