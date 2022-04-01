@@ -7,6 +7,10 @@
 <h1>Hardware Part</h1>
 <h2>1) Sensor Integration</h2>
 Qsys project for integrating sensors namely Temperature, EDA, Light, Gas Sensor. On board accelerometer integration.
+
+![Wearable Device](outputs/model1.jpeg)
+![Wearable Device](outputs/model2.jpeg)
+
 <h3>Tree</h3>
 
 >fpga<br>
@@ -47,8 +51,7 @@ Qsys project for integrating sensors namely Temperature, EDA, Light, Gas Sensor.
 
 >>ADC top module, sopcinfo, sof, qsf and other files<br>
 
-![Wearable Device](outputs/model1.jpeg)
-![Wearable Device](outputs/model2.jpeg)
+![Sensor Integration](adc.jpg)
 
 The values from the sensors are test inputs for the sensor modelling.
 <h3>Plot Sensor Values</h3>
