@@ -106,8 +106,8 @@ Videos that belong to 5 catgories namely, Angry, Anxiety, Happy, Neutral, Sad ar
 ![Happy](outputs/real_time_happy.jpg)<br>
 [Anxiety](outputs/real_time_anxiety.jpg)<br>
 ![Anxiety](outputs/real_time_anxiety.jpg)<br>
-[Angry](outputs/real_time_angry.png)<br>
-![Angry](outputs/real_time_angry.png)<br>
+[Angry](outputs/real_time_angr.png)<br>
+![Angry](outputs/real_time_angr.png)<br>
 
 
 <h2>3) Sensor Modelling</h2>
