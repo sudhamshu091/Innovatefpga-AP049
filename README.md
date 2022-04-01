@@ -1,7 +1,7 @@
 # Innovatefpga-AP049
 [Project proposal](http://www.innovatefpga.com/cgi-bin/innovate/teams.pl?Id=AP049)
 
-[](outputs/bd.jpg)<br>
+[High Level Block Diagram](outputs/bd.jpg)<br>
 ![](outputs/bd.jpg)<br>
 
 <h1>Hardware Part</h1>
