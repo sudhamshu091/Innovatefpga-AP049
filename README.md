@@ -167,10 +167,10 @@ Recommendations based on prediction(based on classification) of mental health di
 
 [](outputs/recommender1.png)<br>
 ![](outputs/recommender1.png)<br>
-[](outputs/recommender2.png)<br>
-![](outputs/recommender2.png)<br>
-[](outputs/recommender3.png)<br>
-![](outputs/recommender3.png)<br>
+[](outputs/recommend2.png)<br>
+![](outputs/recommend2.png)<br>
+[](outputs/recommend3.png)<br>
+![](outputs/recommend3.png)<br>
 
 User Survey(recommendations based on questions asked to user)
 
