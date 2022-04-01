@@ -6,7 +6,7 @@
 
 <h1>Hardware Part</h1>
 <h2>1) Sensor Integration</h2>
-Qsys project for integrating sensors namely Temperature, EDA, Light, Gas Sensor. On board accelerometer integration.
+<h4>Qsys project for integrating sensors namely Temperature, EDA, Light, Gas Sensor. On board accelerometer integration.</h4>
 
 ![Wearable Device](outputs/model1_LI.jpg)
 ![Wearable Device](outputs/model2_LI.jpg)
@@ -53,7 +53,7 @@ Qsys project for integrating sensors namely Temperature, EDA, Light, Gas Sensor.
 
 ![Sensor Integration](outputs/adc.jpg)
 
-The values from the sensors are test inputs for the sensor modelling.
+<h4>The values from the sensors are test inputs for the sensor modelling.</h4>
 <h3>Plot Sensor Values</h3>
 
 [Temperature Sensor](outputs/temp_val.png)
@@ -63,7 +63,7 @@ The values from the sensors are test inputs for the sensor modelling.
 
 <h1>Software Part</h1>
 <h2>2) Video Emotion Recognition</h2>
-Videos that belong to 5 catgories namely, Angry, Anxiety, Happy, Neutral, Sad are collected from youtube, stock videos and online sites.
+<h4>Videos that belong to 5 catgories namely, Angry, Anxiety, Happy, Neutral, Sad are collected from youtube, stock videos and online sites.</h4>
 
 <h3>Tree</h3>
 
@@ -103,7 +103,7 @@ Videos that belong to 5 catgories namely, Angry, Anxiety, Happy, Neutral, Sad ar
 
 - With real time video upto 85% confidence
 
-Some Sample Realtime Outputs<br>
+<h4>Some Sample Realtime Outputs</h4>
 
 [Sad](outputs/real_time_sad.jpg)<br>
 ![Sad](outputs/real_time_sad.jpg)<br>
@@ -142,7 +142,7 @@ Some Sample Realtime Outputs<br>
 
 <br>
 
-Stress Prediction for Test Data<br>
+<h4>Stress Prediction for Test Data</h4>
 
 [Stress_Prediction_100_values_of_test_data](outputs/prediction_100_values.png)<br>
 ![](outputs/prediction_100_values.png)<br>
@@ -163,7 +163,7 @@ Stress Prediction for Test Data<br>
 ![](outputs/real_time_stress_prediction.png)<br>
 
 
-Recommendations based on prediction(based on classification, correlation of video emotion recognition and sensor model predictions) of mental health disorder(for Depression and Anxiety)<br>
+<h4>Recommendations based on prediction(based on classification, correlation of video emotion recognition and sensor model predictions) of mental health disorder(for Depression and Anxiety)</h4>
 
 [](outputs/recommender1.png)<br>
 ![](outputs/recommender1.png)<br>
@@ -172,7 +172,7 @@ Recommendations based on prediction(based on classification, correlation of vide
 [](outputs/recommend3.png)<br>
 ![](outputs/recommend3.png)<br>
 
-User Survey(recommendations based on questions asked to user)
+<h4>User Survey(recommendations based on questions asked to user)</h4>
 
 [](outputs/user_survey1.png)<br>
 ![](outputs/user_survey1.png)<br>
