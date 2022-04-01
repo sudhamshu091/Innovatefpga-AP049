@@ -51,7 +51,7 @@ Qsys project for integrating sensors namely Temperature, EDA, Light, Gas Sensor.
 
 >>ADC top module, sopcinfo, sof, qsf and other files<br>
 
-![Sensor Integration](adc.jpg)
+![Sensor Integration](outputs/adc.jpg)
 
 The values from the sensors are test inputs for the sensor modelling.
 <h3>Plot Sensor Values</h3>
