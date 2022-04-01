@@ -60,11 +60,6 @@ The values from the sensors are test inputs for the sensor modelling.
 ![Temperature Sensor](outputs/temp_val.png)
 [EDA Sensor](outputs/eda.png)
 ![EDA Sensor](outputs/eda.png)
-[Light Sensor](light.png)
-![Light Sensor](light.png)
-[Gas Sensor](gas.png)
-![Gas Sensor](gas.png)
-
 
 <h1>Software Part</h1>
 <h2>2) Video Emotion Recognition</h2>
@@ -111,8 +106,8 @@ Videos that belong to 5 catgories namely, Angry, Anxiety, Happy, Neutral, Sad ar
 ![Happy](outputs/real_time_happy.jpg)<br>
 [Anxiety](outputs/real_time_anxiety.jpg)<br>
 ![Anxiety](outputs/real_time_anxiety.jpg)<br>
-[Angry](outputs/real_time_angry.jpg)<br>
-![Angry](outputs/real_time_angry.jpg)<br>
+[Angry](outputs/real_time_angry.png)<br>
+![Angry](outputs/real_time_angry.png)<br>
 
 
 <h2>3) Sensor Modelling</h2>
