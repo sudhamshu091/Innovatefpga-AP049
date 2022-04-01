@@ -180,3 +180,7 @@
 ![](outputs/user_survey2.png)<br>
 [](outputs/user_survey3.png)<br>
 ![](outputs/user_survey3.png)<br>
+
+References<br>
+
+[1] Philip Schmidt, Attila Reiss, Robert Duerichen, Claus Marberger and Kristof Van Laerhoven. 2018. Introducing WESAD, a multimodal dataset for Wearable Stress and Affect Detection. In 2018 International Conference on Multimodal Interaction (ICMI â€™18), October 16â€“20, 2018, Boulder, CO, USA. ACM, New York, NY, USA, 9 pages.
