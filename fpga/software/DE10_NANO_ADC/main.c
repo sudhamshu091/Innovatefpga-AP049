@@ -13,7 +13,7 @@ void main(void){
 	float R1 = 10000;
 	float c1 = 0.001129148, c2 = 0.000234125, c3 = 0.0000000876741;
 	float logR2, R2, T;
-	printf("Enter the sensor value, 1 for temp sensor, 2 for eda, 3 for Gas, 4 for Light");
+	printf("Enter the sensor value, 1 for temp sensor, 2 for GSR, 3 for Gas, 4 for Light");
 	scanf("%d", &a);
 
 	while(1){
