@@ -4,6 +4,9 @@
 [High Level Block Diagram](outputs/bd.jpg)<br>
 ![](outputs/bd.jpg)<br>
 
+[Product](outputs/product.jpg)<br>
+![](outputs/product.jpg)<br>
+
 <h1>Hardware Part</h1>
 <h2>1) Sensor Integration</h2>
 <h4>Integration of sensors using DE10 Nano. Temperature, EDA, Ambient light, Gas Sensor. On board accelerometer integration.</h4>
