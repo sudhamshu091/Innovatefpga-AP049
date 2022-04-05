@@ -1,5 +1,5 @@
 # Innovatefpga-AP049
-[Project proposal](http://www.innovatefpga.com/cgi-bin/innovate/teams.pl?Id=AP049)
+[Final Paper](http://www.innovatefpga.com/cgi-bin/innovate/teams.pl?Id=AP049)
 
 [High Level Block Diagram](outputs/bd.jpg)<br>
 ![](outputs/bd.jpg)<br>
