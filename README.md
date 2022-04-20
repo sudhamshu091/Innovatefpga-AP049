@@ -58,8 +58,8 @@
 
 [Logic Utilization](outputs/logic_utilization.png)<br>
 ![Logic Utilization](outputs/logic_utilization.png)<br>
-[RTL](outputs/rtl.png)
-![RTL](outputs/rtl.png)
+[RTL](outputs/rtl1.png)
+![RTL](outputs/rtl1.png)
 
 <h4>The values from the sensors are test inputs for the sensor modelling.</h4>
 <h3>Plot Sensor Values</h3>
