@@ -72,7 +72,7 @@ always @(posedge FPGA_CLK1_50 or posedge KEY[0]) begin
         counter <= 0;
     end
 
-    else if (counter == 24999999) begin
+	else if (counter == 16777210) begin
         counter <= 0;
     end
     else begin
