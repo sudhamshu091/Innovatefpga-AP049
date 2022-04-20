@@ -1,5 +1,5 @@
 TimeQuest Timing Analyzer report for DE10_NANO_ADC
-Wed Apr 20 22:42:05 2022
+Wed Apr 20 23:10:09 2022
 Quartus Prime Version 17.0.0 Build 595 04/25/2017 SJ Lite Edition
 
 
@@ -103,18 +103,18 @@ agreement for further details.
 ; Number detected on machine ; 8           ;
 ; Maximum allowed            ; 8           ;
 ;                            ;             ;
-; Average used               ; 1.22        ;
+; Average used               ; 2.40        ;
 ; Maximum used               ; 8           ;
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processor 2            ;   8.1%      ;
-;     Processor 3            ;   7.0%      ;
-;     Processor 4            ;   6.8%      ;
-;     Processor 5            ;   0.1%      ;
-;     Processor 6            ;   0.1%      ;
-;     Processor 7            ;   0.1%      ;
-;     Processor 8            ;   0.0%      ;
+;     Processor 2            ;  21.9%      ;
+;     Processor 3            ;  21.5%      ;
+;     Processor 4            ;  21.4%      ;
+;     Processor 5            ;  18.7%      ;
+;     Processor 6            ;  18.7%      ;
+;     Processor 7            ;  18.7%      ;
+;     Processor 8            ;  18.6%      ;
 +----------------------------+-------------+
 
 
@@ -123,9 +123,9 @@ agreement for further details.
 +-------------------------------------------------------------------+--------+--------------------------+
 ; SDC File Path                                                     ; Status ; Read at                  ;
 +-------------------------------------------------------------------+--------+--------------------------+
-; DE10_NANO_QSYS/synthesis/submodules/altera_reset_controller.sdc   ; OK     ; Wed Apr 20 22:41:57 2022 ;
-; DE10_NANO_QSYS/synthesis/submodules/DE10_NANO_QSYS_nios2_qsys.sdc ; OK     ; Wed Apr 20 22:41:57 2022 ;
-; DE10_NANO_ADC.sdc                                                 ; OK     ; Wed Apr 20 22:41:57 2022 ;
+; DE10_NANO_QSYS/synthesis/submodules/altera_reset_controller.sdc   ; OK     ; Wed Apr 20 23:09:49 2022 ;
+; DE10_NANO_QSYS/synthesis/submodules/DE10_NANO_QSYS_nios2_qsys.sdc ; OK     ; Wed Apr 20 23:09:49 2022 ;
+; DE10_NANO_ADC.sdc                                                 ; OK     ; Wed Apr 20 23:09:49 2022 ;
 +-------------------------------------------------------------------+--------+--------------------------+
 
 
@@ -1055,7 +1055,7 @@ No non-DPA dedicated SERDES Receiver circuitry present in device or used in desi
 Info: *******************************************************************
 Info: Running Quartus Prime TimeQuest Timing Analyzer
     Info: Version 17.0.0 Build 595 04/25/2017 SJ Lite Edition
-    Info: Processing started: Wed Apr 20 22:41:54 2022
+    Info: Processing started: Wed Apr 20 23:09:44 2022
 Info: Command: quartus_sta DE10_NANO_ADC -c DE10_NANO_ADC
 Info: qsta_default_script.tcl version: #1
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
@@ -1180,6 +1180,8 @@ Info (332114): Report Metastability: Found 34 synchronizer chains.
     Info (332114): Typical MTBF values are calculated based on the nominal silicon characteristics, at nominal operating conditions.
     Info (332114):   - Under typical conditions, an increase of 100ps in available settling time will increase MTBF values by a factor of 17.8
 Info: Analyzing Slow 1100mV 0C Model
+Info (334003): Started post-fitting delay annotation
+Info (334004): Delay annotation completed successfully
 Warning (332060): Node: DE10_NANO_QSYS:u0|adc_ltc2308_fifo:adc_ltc2308|adc_ltc2308:adc_ltc2308_inst|pre_measure_start was determined to be a clock but was found without an associated clock assignment.
     Info (13166): Register DE10_NANO_QSYS:u0|adc_ltc2308_fifo:adc_ltc2308|adc_ltc2308:adc_ltc2308_inst|config_cmd[4] is being clocked by DE10_NANO_QSYS:u0|adc_ltc2308_fifo:adc_ltc2308|adc_ltc2308:adc_ltc2308_inst|pre_measure_start
 Info (332097): The following timing edges are non-unate.  TimeQuest will assume pos-unate behavior for these edges in the clock network.
@@ -1237,6 +1239,8 @@ Info (332114): Report Metastability: Found 34 synchronizer chains.
     Info (332114): Typical MTBF values are calculated based on the nominal silicon characteristics, at nominal operating conditions.
     Info (332114):   - Under typical conditions, an increase of 100ps in available settling time will increase MTBF values by a factor of 17.8
 Info: Analyzing Fast 1100mV 85C Model
+Info (334003): Started post-fitting delay annotation
+Info (334004): Delay annotation completed successfully
 Warning (332060): Node: DE10_NANO_QSYS:u0|adc_ltc2308_fifo:adc_ltc2308|adc_ltc2308:adc_ltc2308_inst|pre_measure_start was determined to be a clock but was found without an associated clock assignment.
     Info (13166): Register DE10_NANO_QSYS:u0|adc_ltc2308_fifo:adc_ltc2308|adc_ltc2308:adc_ltc2308_inst|config_cmd[4] is being clocked by DE10_NANO_QSYS:u0|adc_ltc2308_fifo:adc_ltc2308|adc_ltc2308:adc_ltc2308_inst|pre_measure_start
 Info (332097): The following timing edges are non-unate.  TimeQuest will assume pos-unate behavior for these edges in the clock network.
@@ -1353,9 +1357,9 @@ Info (332114): Report Metastability: Found 34 synchronizer chains.
 Info (332102): Design is not fully constrained for setup requirements
 Info (332102): Design is not fully constrained for hold requirements
 Info: Quartus Prime TimeQuest Timing Analyzer was successful. 0 errors, 6 warnings
-    Info: Peak virtual memory: 5057 megabytes
-    Info: Processing ended: Wed Apr 20 22:42:05 2022
-    Info: Elapsed time: 00:00:11
-    Info: Total CPU time (on all processors): 00:00:11
+    Info: Peak virtual memory: 5416 megabytes
+    Info: Processing ended: Wed Apr 20 23:10:09 2022
+    Info: Elapsed time: 00:00:25
+    Info: Total CPU time (on all processors): 00:00:46
 
 

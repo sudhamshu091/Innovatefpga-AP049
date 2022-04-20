@@ -1,0 +1,134 @@
+Flow report for DE10_NANO_ADC
+Wed Apr 20 23:10:09 2022
+Quartus Prime Version 17.0.0 Build 595 04/25/2017 SJ Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Flow Summary
+  3. Flow Settings
+  4. Flow Non-Default Global Settings
+  5. Flow Elapsed Time
+  6. Flow OS Summary
+  7. Flow Log
+  8. Flow Messages
+  9. Flow Suppressed Messages
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 2017  Intel Corporation. All rights reserved.
+Your use of Intel Corporation's design tools, logic functions 
+and other software and tools, and its AMPP partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel MegaCore Function License Agreement, or other 
+applicable license agreement, including, without limitation, 
+that your use is for the sole purpose of programming logic 
+devices manufactured by Intel and sold by Intel or its 
+authorized distributors.  Please refer to the applicable 
+agreement for further details.
+
+
+
++-------------------------------------------------------------------------------+
+; Flow Summary                                                                  ;
++---------------------------------+---------------------------------------------+
+; Flow Status                     ; Successful - Wed Apr 20 23:09:42 2022       ;
+; Quartus Prime Version           ; 17.0.0 Build 595 04/25/2017 SJ Lite Edition ;
+; Revision Name                   ; DE10_NANO_ADC                               ;
+; Top-level Entity Name           ; DE10_NANO_ADC                               ;
+; Family                          ; Cyclone V                                   ;
+; Device                          ; 5CSEBA6U23I7                                ;
+; Timing Models                   ; Final                                       ;
+; Logic utilization (in ALMs)     ; 1,609 / 41,910 ( 4 % )                      ;
+; Total registers                 ; 2481                                        ;
+; Total pins                      ; 70 / 314 ( 22 % )                           ;
+; Total virtual pins              ; 0                                           ;
+; Total block memory bits         ; 1,368,512 / 5,662,720 ( 24 % )              ;
+; Total DSP Blocks                ; 2 / 112 ( 2 % )                             ;
+; Total HSSI RX PCSs              ; 0                                           ;
+; Total HSSI PMA RX Deserializers ; 0                                           ;
+; Total HSSI TX PCSs              ; 0                                           ;
+; Total HSSI PMA TX Serializers   ; 0                                           ;
+; Total PLLs                      ; 1 / 6 ( 17 % )                              ;
+; Total DLLs                      ; 0 / 4 ( 0 % )                               ;
++---------------------------------+---------------------------------------------+
+
+
++-----------------------------------------+
+; Flow Settings                           ;
++-------------------+---------------------+
+; Option            ; Setting             ;
++-------------------+---------------------+
+; Start date & time ; 04/20/2022 23:05:10 ;
+; Main task         ; Compilation         ;
+; Revision Name     ; DE10_NANO_ADC       ;
++-------------------+---------------------+
+
+
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Flow Non-Default Global Settings                                                                                                                     ;
++-------------------------------------+------------------------------------------------------------------+---------------+----------------+------------+
+; Assignment Name                     ; Value                                                            ; Default Value ; Entity Name    ; Section Id ;
++-------------------------------------+------------------------------------------------------------------+---------------+----------------+------------+
+; COMPILER_SIGNATURE_ID               ; 5311869301909.165047611005364                                    ; --            ; --             ; --         ;
+; MAX_CORE_JUNCTION_TEMP              ; 85                                                               ; --            ; --             ; --         ;
+; MIN_CORE_JUNCTION_TEMP              ; 0                                                                ; --            ; --             ; --         ;
+; MISC_FILE                           ; DE10_NANO_QSYS/synthesis/../DE10_NANO_QSYS.cmp                   ; --            ; --             ; --         ;
+; MISC_FILE                           ; DE10_NANO_QSYS/synthesis/../../DE10_NANO_QSYS.qsys               ; --            ; --             ; --         ;
+; PARTITION_COLOR                     ; -- (Not supported for targeted family)                           ; --            ; --             ; Top        ;
+; PARTITION_FITTER_PRESERVATION_LEVEL ; -- (Not supported for targeted family)                           ; --            ; --             ; Top        ;
+; PARTITION_NETLIST_TYPE              ; -- (Not supported for targeted family)                           ; --            ; --             ; Top        ;
+; POWER_BOARD_THERMAL_MODEL           ; None (CONSERVATIVE)                                              ; --            ; --             ; --         ;
+; POWER_PRESET_COOLING_SOLUTION       ; 23 MM HEAT SINK WITH 200 LFPM AIRFLOW                            ; --            ; --             ; --         ;
+; SLD_FILE                            ; DE10_NANO_QSYS/synthesis/DE10_NANO_QSYS.regmap                   ; --            ; --             ; --         ;
+; SLD_FILE                            ; DE10_NANO_QSYS/synthesis/DE10_NANO_QSYS.debuginfo                ; --            ; --             ; --         ;
+; SLD_INFO                            ; QSYS_NAME DE10_NANO_QSYS HAS_SOPCINFO 1 GENERATION_ID 1476415940 ; --            ; DE10_NANO_QSYS ; --         ;
+; SOPCINFO_FILE                       ; DE10_NANO_QSYS/synthesis/../../DE10_NANO_QSYS.sopcinfo           ; --            ; --             ; --         ;
+; SYNTHESIS_ONLY_QIP                  ; On                                                               ; --            ; --             ; --         ;
++-------------------------------------+------------------------------------------------------------------+---------------+----------------+------------+
+
+
++-------------------------------------------------------------------------------------------------------------------------------+
+; Flow Elapsed Time                                                                                                             ;
++---------------------------+--------------+-------------------------+---------------------+------------------------------------+
+; Module Name               ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
++---------------------------+--------------+-------------------------+---------------------+------------------------------------+
+; Analysis & Synthesis      ; 00:01:02     ; 1.0                     ; 5063 MB             ; 00:01:33                           ;
+; Fitter                    ; 00:03:07     ; 1.3                     ; 7077 MB             ; 00:11:56                           ;
+; Assembler                 ; 00:00:13     ; 1.0                     ; 4886 MB             ; 00:00:13                           ;
+; TimeQuest Timing Analyzer ; 00:00:25     ; 2.4                     ; 5416 MB             ; 00:00:46                           ;
+; Total                     ; 00:04:47     ; --                      ; --                  ; 00:14:28                           ;
++---------------------------+--------------+-------------------------+---------------------+------------------------------------+
+
+
++-----------------------------------------------------------------------------------------+
+; Flow OS Summary                                                                         ;
++---------------------------+------------------+------------+------------+----------------+
+; Module Name               ; Machine Hostname ; OS Name    ; OS Version ; Processor type ;
++---------------------------+------------------+------------+------------+----------------+
+; Analysis & Synthesis      ; Sudhamshu-B-N    ; Windows 10 ; 10.0       ; x86_64         ;
+; Fitter                    ; Sudhamshu-B-N    ; Windows 10 ; 10.0       ; x86_64         ;
+; Assembler                 ; Sudhamshu-B-N    ; Windows 10 ; 10.0       ; x86_64         ;
+; TimeQuest Timing Analyzer ; Sudhamshu-B-N    ; Windows 10 ; 10.0       ; x86_64         ;
++---------------------------+------------------+------------+------------+----------------+
+
+
+------------
+; Flow Log ;
+------------
+quartus_map --read_settings_files=on --write_settings_files=off DE10_NANO_ADC -c DE10_NANO_ADC
+quartus_fit --read_settings_files=off --write_settings_files=off DE10_NANO_ADC -c DE10_NANO_ADC
+quartus_asm --read_settings_files=off --write_settings_files=off DE10_NANO_ADC -c DE10_NANO_ADC
+quartus_sta DE10_NANO_ADC -c DE10_NANO_ADC
+
+
+

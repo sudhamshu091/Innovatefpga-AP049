@@ -41,7 +41,7 @@ module DE10_NANO_ADC(
 	output		     [7:0]		LED,
 
 	//////////// SW //////////
-	input 		     [3:0]		SW
+	input 		     [0:0]		SW
 );
 
 
@@ -59,7 +59,7 @@ module DE10_NANO_ADC(
 DE10_NANO_QSYS u0 (
         .clk_clk                        (FPGA_CLK1_50),     // clk.clk
         .reset_reset_n                  (KEY[0]),           // reset.reset_n
-	.sw_external_connection_export  (counter[24:23]),     // sw_external_connection.export
+        .sw_external_connection_export  (counter[24:23]),     // sw_external_connection.export
         .adc_ltc2308_conduit_end_CONVST (ADC_CONVST),       // adc_ltc2308_conduit_end.CONVST
         .adc_ltc2308_conduit_end_SCK    (ADC_SCK),          //.SCK
         .adc_ltc2308_conduit_end_SDI    (ADC_SDI),          //.SDI
@@ -72,11 +72,12 @@ always @(posedge FPGA_CLK1_50 or posedge KEY[0]) begin
         counter <= 0;
     end
 
-	else if (counter == 16777210) begin
+    else if (counter == 16777210) begin
         counter <= 0;
     end
     else begin
         counter <= counter + 1'b1;
 	end
 end
+
 endmodule

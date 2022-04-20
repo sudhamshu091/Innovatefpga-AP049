@@ -1,0 +1,17 @@
+Analysis & Synthesis Status : Successful - Wed Apr 20 23:06:15 2022
+Quartus Prime Version : 17.0.0 Build 595 04/25/2017 SJ Lite Edition
+Revision Name : DE10_NANO_ADC
+Top-level Entity Name : DE10_NANO_ADC
+Family : Cyclone V
+Logic utilization (in ALMs) : N/A
+Total registers : 2338
+Total pins : 70
+Total virtual pins : 0
+Total block memory bits : 1,368,512
+Total DSP Blocks : 2
+Total HSSI RX PCSs : 0
+Total HSSI PMA RX Deserializers : 0
+Total HSSI TX PCSs : 0
+Total HSSI PMA TX Serializers : 0
+Total PLLs : 1
+Total DLLs : 0
