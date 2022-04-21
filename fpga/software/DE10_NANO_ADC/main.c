@@ -9,7 +9,6 @@ void main(void){
 	int ch = 0;
 	const int nReadNum = 10; // max 1024
 	int i, Value=0;
-	int a = 0;
 	float R1 = 10000;
 	float c1 = 0.001129148, c2 = 0.000234125, c3 = 0.0000000876741;
 	float logR2, R2, T;
@@ -34,20 +33,20 @@ void main(void){
 		// read adc value
 		for(i=0;i<nReadNum;i++){
 			Value = IORD(ADC_LTC2308_BASE, 0x01);
-			if(a==1){
+			if(ch==1){
 			R2 = R1 * (1023.0 / (((float)Value/1000.0)*198.75) - 1.0);
 			logR2 = log(R2);
 			T = (1.0 / (c1 + c2*logR2 + c3*logR2*logR2*logR2));
 			T = T - 273.15;
 			printf("%.3fC\n",T);
 			}
-			if(a==2){
+			if(ch==2){
 				printf("%.3fV\n",((float)Value)*205/1000.0);
 			}
-			if(a==3){
+			if(ch==3){
 				printf("%.3fppm\n",((float)Value*179.64)/1000.0);
 			}
-			if(a==4){
+			if(ch==4){
 				if((float)Value/1000.0 > 1.2216){
 				printf("%.3f\n",((float)Value*16.5)/1000.0);
 				}
