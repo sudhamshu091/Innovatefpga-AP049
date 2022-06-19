@@ -129,7 +129,6 @@
 
 [Link](https://archive.ics.uci.edu/ml/datasets/WESAD+%28Wearable+Stress+and+Affect+Detection%29)
 
-<h3>Tree</h3>
 
 >sensors<br>
 
@@ -146,48 +145,22 @@
 
 [Confidence](outputs/confidence.png)<br>
 
-![](outputs/confidence.png)<br>
-
-<br>
-
-<h4>Stress Prediction for Test Data</h4>
-
-[Stress_Prediction_100_values_of_test_data](outputs/prediction_100_values.png)<br>
-![](outputs/prediction_100_values.png)<br>
-[Stress_Prediction_200_values_of_test_data](outputs/prediction_200_values.png)<br>
-![](outputs/prediction_200_values.png)<br>
-
-<h1>Correlation, Classification, Mental Health Disorder Diagnosis and Recommendation</h1>
-
-[Temperature](outputs/temp.png)<br>
-![](outputs/temp.png)<br>
-[GSR](outputs/gsr.png)<br>
-![](outputs/gsr.png)<br>
-[ACC](outputs/acc.png)<br>
-![](outputs/acc.png)<br>
-[Correlation](outputs/corr.png)<br>
-![](outputs/corr.png)<br>
-[Real time Stress Prediction](outputs/real_time_stress_prediction.png)<br>
-![](outputs/real_time_stress_prediction.png)<br>
+! 149
 
 
-<h4>Recommendations based on prediction(based on classification, correlation of video emotion recognition and sensor model predictions) of mental health disorder(for Depression and Anxiety)</h4>
+![](
 
-[](outputs/recommender1.png)<br>
-![](outputs/recommender1.png)<br>
-[](outputs/recommend2.png)<br>
-![](outputs/recommend2.png)<br>
-[](outputs/recommend3.png)<br>
-![](outputs/recommend3.png)<br>
 
-<h4>User Survey(recommendations based on questions asked to user)</h4>
 
-[](outputs/user_survey1.png)<br>
-![](outputs/user_survey1.png)<br>
-[](outputs/user_survey2.png)<br>
-![](outputs/user_survey2.png)<br>
-[](outputs/user_survey3.png)<br>
-![](outputs/user_survey3.png)<br>
+
+
+
+
+
+
+
+
+
 
 References<br>
 
