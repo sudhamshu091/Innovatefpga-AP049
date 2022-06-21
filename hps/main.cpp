@@ -8,8 +8,8 @@
 #include <cstdio>
 #include <math.h>
 
-#define ALT_STM_OFST        0xfc000000 /* From socal/hps.h: The base address by$
-#define ALT_LWFPGASLVS_OFST 0xff200000 /* From socal/hps.h: The base address by$
+#define ALT_STM_OFST        0xfc000000 /* From socal/hps.h */
+#define ALT_LWFPGASLVS_OFST 0xff200000 /* From socal/hps.h */
 #define HW_REGS_SPAN 		( 0x04000000 )
 #define HW_REGS_BASE 		( ALT_STM_OFST )
 #define HW_REGS_MASK 		( HW_REGS_SPAN - 1 )
