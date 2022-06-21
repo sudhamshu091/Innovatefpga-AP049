@@ -80,19 +80,11 @@ int main(void){
 			T = T - 273.15;
 			printf("%.3fC\n",T);
 			}
-			if(ch==2){
+			else if(ch==2){
 				printf("%.3fV\n",((float)Value)*205/1000.0);
 			}
-			if(ch==3){
+			else if(ch==3){
 				printf("%.3fppm\n",((float)Value*179.64)/1000.0);
-			}
-			if(ch==4){
-				if((float)Value/1000.0 > 1.2216){
-				printf("%.3f\n",((float)Value*16.5)/1000.0);
-				}
-				else{
-				printf("%.3f\n",((float)Value*-16.5)/1000.0);
-				}
 			}
 		usleep(200*1000);
 	} // while
