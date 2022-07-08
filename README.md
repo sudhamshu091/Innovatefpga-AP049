@@ -5,5 +5,4 @@
 
 [Demo Video Draft](https://youtu.be/EHzcJHJ4WhU)<br>
 [Presentation Video Draft](https://youtu.be/MtJmKKRCLlM)<br>
-[Semifinal Demo Video](https://youtu.be/G_AMQiRGlIs)<br>
 </h2>
